@@ -10,8 +10,10 @@ app.use(cors());
 app.use(express.static("public"));
 
 import users from "./routes/users.js";
+import customers from "./routes/customers.js";
 
 app.use("/api/users", users);
+app.use("/api/customers", customers);
 
 const PORT = process.env.PORT;
 const appName = process.env.APP_NAME;
