@@ -4,24 +4,6 @@ import connection from "../config/dbConnection.js";
 const router = express.Router();
 router.use(express.json());
 
-// {
-//     "id": 1,
-//     "first_name": "viny",
-//     "last_name": "jr",
-//     "phone": "0712345678",
-//     "national_id": "123456",
-//     "date_of_birth": "2015-03-02T21:00:00.000Z",
-//     "gender": "male",
-//     "address": "rio, brazil",
-//     "county": "nairobi",
-//     "occupation": "footballer",
-//     "monthly_income": "100000.00",
-//     "credit_score": 0,
-//     "created_by": 2,
-//     "created_at": "2025-04-06T10:17:13.000Z",
-//     "updated_at": "2025-04-06T10:17:13.000Z"
-// }
-
 //get all customers
 router.get("/", (req, res) => {
   const sql = "SELECT * FROM customers";
