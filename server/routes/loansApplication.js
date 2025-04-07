@@ -34,6 +34,39 @@ router.get("/pending", (req, res) => {
   });
 });
 
+//approve a loan application
+//this will happen when the admin approves the loan application
+router.put("/approve/:id", (req, res) => {
+  const sql =
+    "UPDATE loan_applications SET status = 'approved', approval_date = NOW() WHERE id = ?";
+  connection.query(sql, [req.params.id], (err, result) => {
+    if (err)
+      return res
+        .status(500)
+        .json({ error: "error updating loan application", err });
+    res.status(200).json({
+      message: "Loan application approved successfully",
+      Status: "Success",
+    });
+  });
+});
+
+//reject a loan application
+//this will happen when the admin rejects the loan application
+router.put("/reject/:id", (req, res) => {
+  const sql = "UPDATE loan_applications SET status = 'rejected' WHERE id = ?";
+  connection.query(sql, [req.params.id], (err, result) => {
+    if (err)
+      return res
+        .status(500)
+        .json({ error: "error updating loan application", err });
+    res.status(200).json({
+      message: "Loan rejected successfully",
+      Status: "Success",
+    });
+  });
+});
+
 // Create a new loan application
 router.post("/", (req, res) => {
   const {
