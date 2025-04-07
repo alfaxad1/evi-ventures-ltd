@@ -4,19 +4,6 @@ import connection from "../config/dbConnection.js";
 const router = express.Router();
 router.use(express.json());
 
-// {
-//
-//     "customer_id": 1,
-//     "product_id": 1,
-//     "officer_id": 1,
-//     "amount": "40000.00",
-//     "purpose": "for a start up business",
-//     "status": "pending",
-//     "approval_date": null,
-//     "comments": "the loaner assured to pay on time",
-//
-// }
-
 // Get all loan applications
 router.get("/", (req, res) => {
   const sql = "SELECT * FROM loan_applications";
@@ -33,6 +20,16 @@ router.get("/:id", (req, res) => {
   connection.query(sql, [req.params.id], (err, result) => {
     if (err)
       return res.status(500).json({ error: "error getting loan application" });
+    res.status(200).json(result);
+  });
+});
+
+//get loans with status of pending
+router.get("/pending", (req, res) => {
+  const sql = "SELECT * FROM loan_applications WHERE status = 'pending'";
+  connection.query(sql, (err, result) => {
+    if (err)
+      return res.status(500).json({ error: "error getting loan applications" });
     res.status(200).json(result);
   });
 });
