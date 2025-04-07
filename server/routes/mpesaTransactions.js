@@ -4,16 +4,6 @@ import connection from "../config/dbConnection.js";
 const router = express.Router();
 router.use(express.json());
 
-// {
-//     "customerId": 1,
-//     "loanId": 1,
-//     "amount": "90000.00",
-//     "type": "deposit",
-//     "mpesaCode": "A56TY78",
-//     "status": "failed",
-//     "initiatedBy": 1
-// }
-
 // Get all transactions
 router.get("/", (req, res) => {
   const sql = "SELECT * FROM mpesa_transactions";
