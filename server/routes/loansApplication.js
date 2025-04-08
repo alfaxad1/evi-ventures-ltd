@@ -28,8 +28,11 @@ router.get("/:id", (req, res) => {
 router.get("/pending", (req, res) => {
   const sql = "SELECT * FROM loan_applications WHERE status = 'pending'";
   connection.query(sql, (err, result) => {
-    if (err)
+    if (err) {
+      console.error("Database error:", err);
       return res.status(500).json({ error: "error getting loan applications" });
+    }
+    console.log("Query result:", result);
     res.status(200).json(result);
   });
 });
