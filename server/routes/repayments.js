@@ -242,4 +242,26 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+// Run default checks daily (call this from a cron job)
+router.get("/check-defaults", async (req, res) => {
+  try {
+    await checkLoanDefaults(connection);
+    res.status(200).json({ message: "Default check completed" });
+  } catch (err) {
+    console.error("Error checking defaults:", err);
+    res.status(500).json({ error: "Error checking loan defaults" });
+  }
+});
+
+// Now properly using calculateRemainingBalance in GET endpoints
+router.get("/:id/balance", async (req, res) => {
+  try {
+    const balance = await calculateRemainingBalance(req.params.id, connection);
+    res.status(200).json({ remaining_balance: balance });
+  } catch (err) {
+    console.error("Error calculating balance:", err);
+    res.status(500).json({ error: "Error calculating remaining balance" });
+  }
+});
+
 export default router;
