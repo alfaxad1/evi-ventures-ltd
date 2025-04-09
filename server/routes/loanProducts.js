@@ -92,15 +92,15 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ error: "Loan product not found" });
     }
 
-    // Get usage statistics
+    // Get usage statistics from loan_applications instead of loans
     const [stats] = await connection.promise().query(
       `
       SELECT 
-        COUNT(*) as total_loans,
-        SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active_loans,
-        SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) as paid_loans,
-        SUM(CASE WHEN status = 'defaulted' THEN 1 ELSE 0 END) as defaulted_loans
-      FROM loans
+        COUNT(*) as total_applications,
+        SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved_applications,
+        SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected_applications,
+        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_applications
+      FROM loan_applications
       WHERE product_id = ?
     `,
       [req.params.id]
