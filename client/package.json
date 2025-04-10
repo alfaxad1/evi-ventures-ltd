@@ -34,6 +34,7 @@
     "react-flatpickr": "^3.10.13",
     "react-helmet-async": "^2.0.5",
     "react-router": "^7.1.5",
+    "react-toastify": "^11.0.5",
     "simplebar-react": "^3.3.0",
     "swiper": "^11.2.3",
     "tailwind-merge": "^3.0.1",
