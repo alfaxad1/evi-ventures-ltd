@@ -29,7 +29,7 @@ const navItems: NavItem[] = [
 
     subItems: [
       { name: "All Customers", path: "/customers", pro: false },
-      { name: "Register Customer", path: "#", pro: false },
+      { name: "Register Customer", path: "/register-customer", pro: false },
     ],
   },
   {

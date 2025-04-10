@@ -11,7 +11,7 @@ import Avatars from "./pages/UiElements/Avatars";
 import Buttons from "./pages/UiElements/Buttons";
 
 import BasicTables from "./pages/Tables/BasicTables";
-import FormElements from "./pages/Forms/FormElements";
+
 import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
@@ -19,6 +19,7 @@ import Home from "./pages/Dashboard/Home";
 import Customers from "./pages/DataPages/Customers";
 import LoanApplications from "./pages/DataPages/LoanApplications";
 import Loans from "./pages/DataPages/Loans";
+import CustomersForm from "./pages/DataPages/CustomersForm";
 
 export default function App() {
   return (
@@ -36,7 +37,6 @@ export default function App() {
             <Route path="/blank" element={<Blank />} />
 
             {/* Forms */}
-            <Route path="/form-elements" element={<FormElements />} />
 
             {/* Tables */}
             <Route path="/basic-tables" element={<BasicTables />} />
@@ -52,6 +52,7 @@ export default function App() {
             <Route path="/customers" element={<Customers />} />
             <Route path="/loanapplications" element={<LoanApplications />} />
             <Route path="/loans" element={<Loans />} />
+            <Route path="/register-customer" element={<CustomersForm />} />
           </Route>
 
           {/* Auth Layout */}
