@@ -17,8 +17,13 @@ export default function UserProfiles() {
           Profile
         </h3>
         <div className="space-y-6">
+          {/* <UserMetaCard /> */}
           <UserMetaCard />
+
+          {/* <UserInfoCard /> */}
           <UserInfoCard />
+
+          {/* <UserAddressCard /> */}
           <UserAddressCard />
         </div>
       </div>

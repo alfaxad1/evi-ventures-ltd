@@ -25,20 +25,29 @@ const dash: NavItem[] = [
 const navItems: NavItem[] = [
   {
     icon: <ListIcon />,
-    name: "Task List",
-    path: "/", //enter your path
+    name: "Customers",
+
     subItems: [
-      { name: "Get all", path: "/customers", pro: false },
-      { name: "Batch Allocation", path: "/", pro: false },
+      { name: "All Customers", path: "/customers", pro: false },
+      { name: "Register Customer", path: "#", pro: false },
     ],
   },
   {
     icon: <Settings />,
-    name: "Customers",
-    //path: "/", //enter your path
+    name: "Loan Application",
+
     subItems: [
-      { name: "Get all", path: "/customers", pro: false },
-      { name: "Batch Allocation", path: "/", pro: false },
+      { name: "Apply Loan", path: "#", pro: false },
+      { name: "Applied loans", path: "/loanapplications", pro: false },
+    ],
+  },
+  {
+    icon: <Settings />,
+    name: "Loans",
+
+    subItems: [
+      { name: "Record Loan", path: "#", pro: false },
+      { name: "All loans", path: "/loans", pro: false },
     ],
   },
 ];

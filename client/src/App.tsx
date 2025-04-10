@@ -9,14 +9,16 @@ import Alerts from "./pages/UiElements/Alerts";
 import Badges from "./pages/UiElements/Badges";
 import Avatars from "./pages/UiElements/Avatars";
 import Buttons from "./pages/UiElements/Buttons";
-import Calendar from "./pages/Calendar";
+
 import BasicTables from "./pages/Tables/BasicTables";
 import FormElements from "./pages/Forms/FormElements";
 import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
-import Customers from "./pages/Customers";
+import Customers from "./pages/DataPages/Customers";
+import LoanApplications from "./pages/DataPages/LoanApplications";
+import Loans from "./pages/DataPages/Loans";
 
 export default function App() {
   return (
@@ -30,7 +32,7 @@ export default function App() {
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
-            <Route path="/calendar" element={<Calendar />} />
+
             <Route path="/blank" element={<Blank />} />
 
             {/* Forms */}
@@ -46,14 +48,22 @@ export default function App() {
             <Route path="/buttons" element={<Buttons />} />
             <Route path="/images" element={<Images />} />
             <Route path="/videos" element={<Videos />} />
+            {/* Data pages */}
+            <Route path="/customers" element={<Customers />} />
+            <Route path="/loanapplications" element={<LoanApplications />} />
+            <Route path="/loans" element={<Loans />} />
           </Route>
 
           {/* Auth Layout */}
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
 
-          {/* my pages */}
+          {/* Data pages */}
           <Route path="/customers" element={<Customers />} />
+          <Route path="/loanapplications" element={<LoanApplications />} />
+          <Route path="/loans" element={<Loans />} />
+
+          {/* Not Found */}
 
           {/* Fallback Route */}
           <Route path="*" element={<NotFound />} />
