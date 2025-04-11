@@ -180,12 +180,12 @@ const PendingLoans = () => {
                     {loan.comments}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    <Button
+                    <button
                       className="bg-green-600 text-white text-sm px-4 py-2 rounded-md mr-2"
                       onClick={() => handleApprove(loan.application_id)}
                     >
                       Approve
-                    </Button>
+                    </button>
                     <Button
                       className="bg-red-600 text-white text-sm px-4 py-2 rounded-md mr-2"
                       onClick={() => handleReject(loan.application_id)}
