@@ -36,18 +36,16 @@ const navItems: NavItem[] = [
     icon: <Settings />,
     name: "Loan Application",
 
-    subItems: [
-      { name: "Apply Loan", path: "#", pro: false },
-      { name: "Applied loans", path: "/loanapplications", pro: false },
-    ],
+    subItems: [{ name: "Apply Loan", path: "#", pro: false }],
   },
   {
     icon: <Settings />,
     name: "Loans",
 
     subItems: [
-      { name: "Record Loan", path: "#", pro: false },
-      { name: "All loans", path: "/loans", pro: false },
+      { name: "Pending Loans", path: "/pending-loans", pro: false },
+      { name: "Approved Loans", path: "/loans", pro: false },
+      { name: "Rejected Loans", path: "/rejected-loans", pro: false },
     ],
   },
 ];

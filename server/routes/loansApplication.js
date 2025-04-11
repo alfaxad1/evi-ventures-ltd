@@ -97,24 +97,94 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Get pending loan applications
+// Get pending loan applications with extended customer details
 router.get("/pending", async (req, res) => {
   try {
     const [applications] = await connection.promise().query(`
-      SELECT la.*, 
-        c.first_name as customer_first_name, 
-        c.last_name as customer_last_name,
-        lp.name as product_name
+      SELECT 
+        la.id AS application_id,  
+        la.customer_id,
+        la.product_id,
+        la.officer_id,
+        la.amount,
+        la.purpose,
+        la.status,
+        la.created_at,
+        la.approval_date,
+        la.comments,
+        CONCAT(c.first_name, ' ', c.last_name) AS customer_full_name,
+        c.occupation,
+        c.monthly_income,
+        c.address,
+        c.phone,
+        c.national_id,
+        lp.name AS product_name,
+        lp.min_amount,
+        lp.max_amount,
+        lp.interest_rate,
+        lp.duration_days
       FROM loan_applications la
       JOIN customers c ON la.customer_id = c.id
       JOIN loan_products lp ON la.product_id = lp.id
       WHERE la.status = 'pending'
       ORDER BY la.created_at DESC
     `);
+
     res.status(200).json(applications);
   } catch (err) {
     console.error("Error getting pending applications:", err);
-    res.status(500).json({ error: "Failed to retrieve pending applications" });
+    res.status(500).json({
+      error: "Failed to retrieve pending applications",
+      //details: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
+  }
+});
+
+//rejected loans
+router.get("/rejected", async (req, res) => {
+  try {
+    const [applications] = await connection.promise().query(`
+      SELECT 
+        la.id AS application_id,  
+        la.customer_id,
+        la.product_id,
+        la.officer_id,
+        la.amount,
+        la.purpose,
+        la.status,
+        la.created_at,
+        la.approval_date,
+        CASE 
+          WHEN la.comments LIKE '%Rejection reason:%' 
+          THEN SUBSTRING(la.comments, 
+                LOCATE('Rejection reason:', la.comments) + CHAR_LENGTH('Rejection reason:') + 1)
+          ELSE la.comments
+        END AS rejection_reason,
+        CONCAT(c.first_name, ' ', c.last_name) AS customer_full_name,
+        c.occupation,
+        c.monthly_income,
+        c.address,
+        c.phone,
+        c.national_id,
+        lp.name AS product_name,
+        lp.min_amount,
+        lp.max_amount,
+        lp.interest_rate,
+        lp.duration_days
+      FROM loan_applications la
+      JOIN customers c ON la.customer_id = c.id
+      JOIN loan_products lp ON la.product_id = lp.id
+      WHERE la.status = 'rejected'
+      ORDER BY la.created_at DESC
+    `);
+
+    res.status(200).json(applications);
+  } catch (err) {
+    console.error("Error getting rejected applications:", err);
+    res.status(500).json({
+      error: "Failed to retrieve rejected applications",
+      details: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
   }
 });
 
@@ -257,6 +327,7 @@ router.post("/", validateLoanApplication, async (req, res) => {
       amount,
       purpose,
       status = "pending",
+      comments,
     } = req.body;
 
     // Verify customer exists
@@ -291,9 +362,9 @@ router.post("/", validateLoanApplication, async (req, res) => {
 
     const [result] = await connection.promise().query(
       `INSERT INTO loan_applications 
-      (customer_id, product_id, officer_id, amount, purpose, status)
-      VALUES (?, ?, ?, ?, ?, ?)`,
-      [customerId, productId, officerId, amount, purpose, status]
+      (customer_id, product_id, officer_id, amount, purpose, status, comments)
+      VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [customerId, productId, officerId, amount, purpose, status, comments]
     );
 
     res.status(201).json({

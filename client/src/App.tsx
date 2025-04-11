@@ -17,9 +17,10 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import Customers from "./pages/DataPages/Customers";
-import LoanApplications from "./pages/DataPages/LoanApplications";
 import Loans from "./pages/DataPages/Loans";
 import CustomersForm from "./pages/DataPages/CustomersForm";
+import PendingLoans from "./pages/DataPages/PendingLoans";
+import RejectedLoans from "./pages/DataPages/RejectedLoans";
 
 export default function App() {
   return (
@@ -50,19 +51,16 @@ export default function App() {
             <Route path="/videos" element={<Videos />} />
             {/* Data pages */}
             <Route path="/customers" element={<Customers />} />
-            <Route path="/loanapplications" element={<LoanApplications />} />
+            
             <Route path="/loans" element={<Loans />} />
             <Route path="/register-customer" element={<CustomersForm />} />
+            <Route path="/pending-loans" element={<PendingLoans />} />
+            <Route path="/rejected-loans" element={<RejectedLoans />} />
           </Route>
 
           {/* Auth Layout */}
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
-
-          {/* Data pages */}
-          <Route path="/customers" element={<Customers />} />
-          <Route path="/loanapplications" element={<LoanApplications />} />
-          <Route path="/loans" element={<Loans />} />
 
           {/* Not Found */}
 
