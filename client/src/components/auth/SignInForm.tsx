@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
@@ -27,13 +27,27 @@ export default function SignInForm() {
   //   });
   // };
 
-  const handleSubmit = () => {
+  const navigate = useNavigate();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      const response = axios.post(
+      const response = await axios.post(
         "http://localhost:8000/api/users/login",
         formData
       );
       console.log("Form submitted successfully:", response);
+      if (response.data.token) {
+        navigate("/");
+        const accessTokenExpiry: number = new Date().getTime() + 3600 * 1000;
+        localStorage.setItem(
+          "access_token_expiry",
+          accessTokenExpiry.toString()
+        );
+        localStorage.setItem("role", JSON.stringify(response.data.role));
+        localStorage.setItem("token", response.data.token);
+      } else {
+        console.error("Error: No token received in response");
+      }
     } catch (error) {
       console.error("Error submitting form:", error);
     }
@@ -61,7 +75,7 @@ export default function SignInForm() {
             </p>
           </div>
           <div>
-            <form>
+            <form onSubmit={(e) => handleSubmit(e)}>
               <div className="space-y-6">
                 <div>
                   <Label>
@@ -70,6 +84,7 @@ export default function SignInForm() {
                   <Input
                     placeholder="info@gmail.com"
                     onChange={(e) => handleChange(e)}
+                    name="email"
                   />
                 </div>
                 <div>
@@ -81,6 +96,7 @@ export default function SignInForm() {
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
                       onChange={(e) => handleChange(e)}
+                      name="password"
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
@@ -103,7 +119,7 @@ export default function SignInForm() {
                   </Link>
                 </div>
                 <div>
-                  <Button className="w-full" size="sm" onClick={handleSubmit}>
+                  <Button className="w-full" size="sm" type="submit">
                     Sign in
                   </Button>
                 </div>

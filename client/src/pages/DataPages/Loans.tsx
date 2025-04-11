@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../../src/components/ui/table";
+import { useNavigate } from "react-router";
 
 interface Loan {
   id: number;
@@ -21,6 +22,13 @@ interface Loan {
   due_date: string;
 }
 const Loans = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/signin");
+    }
+  }, [navigate]);
   useEffect(() => {
     fetchLoans();
   }, []);

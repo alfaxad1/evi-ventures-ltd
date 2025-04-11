@@ -2,11 +2,12 @@ import { Calendar1Icon } from "lucide-react";
 import Input from "../../components/form/input/InputField";
 import Label from "../../components/form/Label";
 import Flatpickr from "react-flatpickr";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../../components/ui/button/Button";
 import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
+import { useNavigate } from "react-router";
 
 interface CustomerData {
   firstName: string;
@@ -23,6 +24,13 @@ interface CustomerData {
 }
 
 const CustomersForm = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/signin");
+    }
+  }, [navigate]);
   const [formData, setFormData] = useState<CustomerData>({
     firstName: "",
     lastName: "",
