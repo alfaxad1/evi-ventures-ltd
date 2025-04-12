@@ -43,8 +43,9 @@ const LoanApplication = () => {
   const handleSelectChange = (value: string) => {
     setFormData({
       ...formData,
-      productId: value,
+      productId: parseInt(value),
     });
+    console.log("Updated formData:", { ...formData, productId: value });
   };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -64,6 +65,19 @@ const LoanApplication = () => {
     }));
   }, [customerId, userId]);
 
+  console.log("Form data:", formData);
+
+  const resetForm = () => {
+    setFormData({
+      amount: "",
+      purpose: "",
+      comments: "",
+      productId: 0,
+      customerId: 0,
+      officerId: 0,
+    });
+  };
+
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -71,6 +85,7 @@ const LoanApplication = () => {
         "http://localhost:8000/api/loansApplication",
         formData
       );
+      resetForm();
       console.log("Form submitted successfully:", response);
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -86,7 +101,9 @@ const LoanApplication = () => {
               <Label htmlFor="first-name">Product</Label>
               <Select
                 options={options}
-                onChange={handleSelectChange}
+                onChange={(selectedOption) =>
+                  handleSelectChange(selectedOption)
+                }
                 placeholder="Select a product"
               />
             </div>
@@ -113,7 +130,7 @@ const LoanApplication = () => {
               <Input
                 type="text"
                 placeholder="Enter some comments"
-                name="phone"
+                name="comments"
                 onChange={(e) => handleChange(e)}
               />
             </div>

@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../../src/components/ui/table";
-import Button from "../../components/ui/button/Button";
+
 import { useNavigate } from "react-router";
 
 interface pendingLoan {
@@ -189,17 +189,17 @@ const PendingLoans = () => {
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                     <button
-                      className="bg-green-600 text-white text-sm px-4 py-2 rounded-md mr-2"
+                      className="bg-success-500 text-white text-sm px-4 py-2 rounded-md mb-2 w-20"
                       onClick={() => handleApprove(loan.application_id)}
                     >
                       Approve
                     </button>
-                    <Button
-                      className="bg-red-600 text-white text-sm px-4 py-2 rounded-md mr-2"
+                    <button
+                      className="bg-error-500 text-white text-sm px-4 py-2 rounded-md mr-2 w-20"
                       onClick={() => handleReject(loan.application_id)}
                     >
                       Reject
-                    </Button>
+                    </button>
                   </TableCell>
                 </TableRow>
               ))}
