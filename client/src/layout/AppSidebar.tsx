@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 
 // Assume these icons are imported from an icon library
-import { ChevronDownIcon, GridIcon, HorizontaLDots, ListIcon } from "../icons";
-import { Settings, ShieldCheck } from "lucide-react";
+import { ChevronDownIcon, HorizontaLDots } from "../icons";
+import { Banknote, FilePlus, GridIcon, RotateCcw, Users } from "lucide-react";
 
 import { useSidebar } from "../context/SidebarContext";
 
@@ -24,7 +24,7 @@ const dash: NavItem[] = [
 
 const navItems: NavItem[] = [
   {
-    icon: <ListIcon />,
+    icon: <Users />,
     name: "Customers",
 
     subItems: [
@@ -33,13 +33,13 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    icon: <Settings />,
+    icon: <FilePlus />,
     name: "Loan Application",
 
     subItems: [{ name: "Apply Loan", path: "#", pro: false }],
   },
   {
-    icon: <Settings />,
+    icon: <Banknote />,
     name: "Loans",
 
     subItems: [
@@ -52,11 +52,11 @@ const navItems: NavItem[] = [
 
 const othersItems: NavItem[] = [
   {
-    icon: <ShieldCheck />,
-    name: "Authentication",
+    icon: <RotateCcw />,
+    name: "Repayments",
     subItems: [
-      { name: "Sign In", path: "/signin", pro: false },
-      { name: "Sign Up", path: "/signup", pro: false },
+      { name: "Repayment", path: "#", pro: false },
+      { name: "Repayment", path: "#", pro: false },
     ],
   },
 ];
@@ -277,14 +277,14 @@ const AppSidebar: React.FC = () => {
             <>
               <img
                 className="dark:hidden"
-                src="/images/logo/smartcollect-logo.png"
+                src="/images/logo/evi-logo.png"
                 alt="Logo"
                 width={150}
                 height={40}
               />
               <img
                 className="hidden dark:block"
-                src="/images/logo/smartcollect-logo.png"
+                src="/images/logo/evi-logo.png"
                 alt="Logo"
                 width={150}
                 height={40}
@@ -292,7 +292,7 @@ const AppSidebar: React.FC = () => {
             </>
           ) : (
             <img
-              src="/images/logo/smartcollect-logo.png"
+              src="/images/logo/evi-logo.png"
               alt="Logo"
               width={32}
               height={32}
@@ -329,7 +329,7 @@ const AppSidebar: React.FC = () => {
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  "Accounts"
+                  "Main"
                 ) : (
                   <HorizontaLDots className="size-6" />
                 )}
