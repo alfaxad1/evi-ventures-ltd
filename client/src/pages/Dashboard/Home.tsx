@@ -8,18 +8,9 @@ import {
   Users,
 } from "lucide-react";
 import { BoxIconLine } from "../../icons";
-// import { useNavigate } from "react-router";
-// import { useEffect } from "react";
+import withAuth from "../../utils/withAuth";
 
-export default function Home() {
-  // const navigate = useNavigate();
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-  //   if (!token) {
-  //     navigate("/signin");
-  //   }
-  // }, [navigate]);
-
+const Home = () => {
   return (
     <>
       <PageMeta title="Smart Collect" description="This is smart collect" />
@@ -174,4 +165,7 @@ export default function Home() {
       </div>
     </>
   );
-}
+};
+
+const AuthenticatedHome = withAuth(Home);
+export default AuthenticatedHome;

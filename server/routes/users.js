@@ -90,7 +90,17 @@ router.post("/login", (req, res) => {
           const token = jwt.sign({ id: result[0].id }, process.env.JWT_SECRET, {
             expiresIn: "1h",
           });
-          res.status(200).json({ token, role, name, email, id });
+
+          // Update the last_login field
+          const updateSql = "UPDATE users SET last_login = NOW() WHERE id = ?";
+          connection.query(updateSql, [id], (updateErr) => {
+            if (updateErr)
+              return res
+                .status(500)
+                .json({ error: "error updating last login timestamp" });
+
+            res.status(200).json({ token, role, name, email, id });
+          });
         } else {
           res.status(401).json({ error: "Invalid email or password" });
         }
