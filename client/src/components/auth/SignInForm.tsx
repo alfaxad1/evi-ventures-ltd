@@ -43,6 +43,8 @@ export default function SignInForm() {
           "access_token_expiry",
           accessTokenExpiry.toString()
         );
+        localStorage.setItem("userName", JSON.stringify(response.data.name));
+        localStorage.setItem("userEmail", JSON.stringify(response.data.email));
         localStorage.setItem("role", JSON.stringify(response.data.role));
         localStorage.setItem("userId", JSON.stringify(response.data.id));
         localStorage.setItem("token", response.data.token);
