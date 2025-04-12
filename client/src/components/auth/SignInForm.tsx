@@ -44,6 +44,7 @@ export default function SignInForm() {
           accessTokenExpiry.toString()
         );
         localStorage.setItem("role", JSON.stringify(response.data.role));
+        localStorage.setItem("userId", JSON.stringify(response.data.id));
         localStorage.setItem("token", response.data.token);
       } else {
         console.error("Error: No token received in response");

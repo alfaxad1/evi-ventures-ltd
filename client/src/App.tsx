@@ -21,6 +21,7 @@ import Loans from "./pages/DataPages/Loans";
 import CustomersForm from "./pages/DataPages/CustomersForm";
 import PendingLoans from "./pages/DataPages/PendingLoans";
 import RejectedLoans from "./pages/DataPages/RejectedLoans";
+import LoanApplication from "./pages/DataPages/LoanApplication";
 
 export default function App() {
   return (
@@ -51,11 +52,12 @@ export default function App() {
             <Route path="/videos" element={<Videos />} />
             {/* Data pages */}
             <Route path="/customers" element={<Customers />} />
-            
+
             <Route path="/loans" element={<Loans />} />
             <Route path="/register-customer" element={<CustomersForm />} />
             <Route path="/pending-loans" element={<PendingLoans />} />
             <Route path="/rejected-loans" element={<RejectedLoans />} />
+            <Route path="/loan-application" element={<LoanApplication />} />
           </Route>
 
           {/* Auth Layout */}

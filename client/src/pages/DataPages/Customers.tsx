@@ -79,6 +79,12 @@ const Customers = () => {
                 >
                   Occupation
                 </TableCell>
+                <TableCell
+                  isHeader
+                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Actions
+                </TableCell>
               </TableRow>
             </TableHeader>
 
@@ -100,6 +106,20 @@ const Customers = () => {
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                     {customer.occupation}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    <button
+                      onClick={() => {
+                        localStorage.setItem(
+                          "customerId",
+                          customer.id.toString()
+                        );
+                        navigate("/loan-application");
+                      }}
+                      className="text-blue-500 hover:text-blue-700"
+                    >
+                      Apply for Loan
+                    </button>
                   </TableCell>
                 </TableRow>
               ))}
