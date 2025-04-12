@@ -8,17 +8,17 @@ import {
   Users,
 } from "lucide-react";
 import { BoxIconLine } from "../../icons";
-import { useNavigate } from "react-router";
-import { useEffect } from "react";
+// import { useNavigate } from "react-router";
+// import { useEffect } from "react";
 
 export default function Home() {
-  const navigate = useNavigate();
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/signin");
-    }
-  }, [navigate]);
+  // const navigate = useNavigate();
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) {
+  //     navigate("/signin");
+  //   }
+  // }, [navigate]);
 
   return (
     <>

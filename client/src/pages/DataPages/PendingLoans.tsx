@@ -7,8 +7,9 @@ import {
   TableHeader,
   TableRow,
 } from "../../../src/components/ui/table";
+import withAuth from "../../utils/withAuth";
 
-import { useNavigate } from "react-router";
+//import { useNavigate } from "react-router";
 
 interface pendingLoan {
   id: number;
@@ -26,13 +27,13 @@ interface pendingLoan {
 }
 
 const PendingLoans = () => {
-  const navigate = useNavigate();
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/signin");
-    }
-  }, [navigate]);
+  // const navigate = useNavigate();
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) {
+  //     navigate("/signin");
+  //   }
+  // }, [navigate]);
   const [pendingLoans, setPendingLoans] = useState<pendingLoan[]>([]);
 
   const fetchPendingLoans = async () => {
@@ -211,4 +212,6 @@ const PendingLoans = () => {
   );
 };
 
-export default PendingLoans;
+const AuthenticatedPendingLoans = withAuth(PendingLoans);
+
+export default AuthenticatedPendingLoans;

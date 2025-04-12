@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "../../../src/components/ui/table";
 import { useNavigate } from "react-router";
+import withAuth from "../../utils/withAuth";
 
 interface Customer {
   id: number;
@@ -20,12 +21,12 @@ interface Customer {
 
 const Customers = () => {
   const navigate = useNavigate();
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/signin");
-    }
-  }, [navigate]);
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) {
+  //     navigate("/signin");
+  //   }
+  // }, [navigate]);
 
   useEffect(() => {
     fetchData();
@@ -131,4 +132,6 @@ const Customers = () => {
   );
 };
 
-export default Customers;
+const AuthenticatedCustomers = withAuth(Customers);
+
+export default AuthenticatedCustomers;

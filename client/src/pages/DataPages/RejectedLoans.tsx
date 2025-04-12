@@ -7,7 +7,8 @@ import {
   TableHeader,
   TableRow,
 } from "../../../src/components/ui/table";
-import { useNavigate } from "react-router";
+import withAuth from "../../utils/withAuth";
+//import { useNavigate } from "react-router";
 interface rejectedLoans {
   id: number;
   customer_full_name: string;
@@ -23,13 +24,13 @@ interface rejectedLoans {
 }
 
 const RejectedLoans = () => {
-  const navigate = useNavigate();
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/signin");
-    }
-  }, [navigate]);
+  // const navigate = useNavigate();
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) {
+  //     navigate("/signin");
+  //   }
+  // }, [navigate]);
   const [rejectedLoans, setRejectedLoans] = useState<rejectedLoans[]>([]);
 
   const fetchRejectedLoans = async () => {
@@ -161,4 +162,6 @@ const RejectedLoans = () => {
   );
 };
 
-export default RejectedLoans;
+const AuthenticatedRejectedLoans = withAuth(RejectedLoans);
+
+export default AuthenticatedRejectedLoans;

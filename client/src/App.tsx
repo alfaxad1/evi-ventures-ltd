@@ -52,7 +52,6 @@ export default function App() {
             <Route path="/videos" element={<Videos />} />
             {/* Data pages */}
             <Route path="/customers" element={<Customers />} />
-
             <Route path="/loans" element={<Loans />} />
             <Route path="/register-customer" element={<CustomersForm />} />
             <Route path="/pending-loans" element={<PendingLoans />} />

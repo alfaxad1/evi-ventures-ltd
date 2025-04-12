@@ -1,19 +1,20 @@
-import { useNavigate } from "react-router";
+//import { useNavigate } from "react-router";
 import Input from "../../components/form/input/InputField";
 import Label from "../../components/form/Label";
 import { useEffect, useState } from "react";
 import Select from "../../components/form/Select";
 import axios from "axios";
 import Button from "../../components/ui/button/Button";
+import withAuth from "../../utils/withAuth";
 
 const LoanApplication = () => {
-  const navigate = useNavigate();
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/signin");
-    }
-  }, [navigate]);
+  // const navigate = useNavigate();
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) {
+  //     navigate("/signin");
+  //   }
+  // }, [navigate]);
 
   const [formData, setFormData] = useState({});
   const [options, setOptions] = useState<{ value: string; label: string }[]>(
@@ -144,4 +145,6 @@ const LoanApplication = () => {
   );
 };
 
-export default LoanApplication;
+const AuthenticatedLoanApplication = withAuth(LoanApplication);
+
+export default AuthenticatedLoanApplication;
