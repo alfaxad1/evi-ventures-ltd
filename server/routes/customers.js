@@ -45,13 +45,16 @@ router.get("/", async (req, res) => {
     // Get total count for pagination metadata
     const [countResult] = await connection
       .promise()
-      .query("SELECT COUNT(*) as total FROM customers");
+      .query("SELECT COUNT(*) as total FROM customers WHERE is_active = TRUE");
     const total = countResult[0].total;
 
     // Get paginated customers
     const [customers] = await connection
       .promise()
-      .query("SELECT * FROM customers LIMIT ? OFFSET ?", [limit, offset]);
+      .query(
+        "SELECT * FROM customers WHERE is_active = TRUE LIMIT ? OFFSET ?",
+        [limit, offset]
+      );
 
     res.status(200).json({
       data: customers,

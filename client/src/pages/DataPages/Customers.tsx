@@ -75,6 +75,20 @@ const Customers = () => {
     }
   };
 
+  const handleDelete = async (customer: Customer) => {
+    if (window.confirm("Are you sure you want to delete this customer?")) {
+      try {
+        const response = await axios.delete(
+          `http://localhost:8000/api/customers/${customer.id}`
+        );
+        console.log("Customer deleted successfully:", response.data);
+        fetchData(); // Refresh the data
+      } catch (error) {
+        console.error("Error deleting customer:", error);
+      }
+    }
+  };
+
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
@@ -152,7 +166,7 @@ const Customers = () => {
                       }}
                       className="text-blue-500 hover:text-blue-700"
                     >
-                      Apply for Loan
+                      Apply
                     </button>
 
                     <button
@@ -160,6 +174,12 @@ const Customers = () => {
                       className="text-blue-500 hover:text-blue-700 ml-4"
                     >
                       Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(customer)}
+                      className="text-error-500 hover:text-error-700 ml-4"
+                    >
+                      Delete
                     </button>
                   </TableCell>
                 </TableRow>

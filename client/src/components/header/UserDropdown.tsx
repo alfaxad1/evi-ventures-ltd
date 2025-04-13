@@ -1,7 +1,26 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { Link } from "react-router";
+import axios from "axios";
+
+const fetchUser = async (
+  userId: string | null,
+  setName: React.Dispatch<React.SetStateAction<string>>,
+  setEmail: React.Dispatch<React.SetStateAction<string>>
+) => {
+  try {
+    const response = await axios.get(
+      `http://localhost:8000/api/users/${userId}`
+    );
+    setName(
+      response.data[0].first_name.concat(" ", response.data[0].last_name)
+    );
+    setEmail(response.data[0].email);
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+  }
+};
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,8 +32,18 @@ export default function UserDropdown() {
   function closeDropdown() {
     setIsOpen(false);
   }
-  const name = localStorage.getItem("userName").replace(/"/g, "");
-  const email = localStorage.getItem("userEmail").replace(/"/g, "");
+
+  const userId = localStorage.getItem("userId");
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  //get user by id
+
+  useEffect(() => {
+    fetchUser(userId, setName, setEmail);
+  }, [userId]);
+
+  // const name = localStorage.getItem("userName").replace(/"/g, "");
+  // const email = localStorage.getItem("userEmail").replace(/"/g, "");
   return (
     <div className="relative">
       <button
@@ -25,9 +54,7 @@ export default function UserDropdown() {
           <img src="/images/user/defelaut.jpeg" alt="User" />
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">
-          {name.split(" ")[0]}
-        </span>
+        <span className="block mr-1 font-medium text-theme-sm">{name}</span>
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""

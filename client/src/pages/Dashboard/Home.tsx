@@ -1,16 +1,28 @@
 import PageMeta from "../../components/common/PageMeta";
-import {
-  BarChart,
-  Clock,
-  DollarSign,
-  Gift,
-  Landmark,
-  Users,
-} from "lucide-react";
+import { BarChart, Clock, DollarSign, Gift, Users } from "lucide-react";
 import { BoxIconLine } from "../../icons";
 import withAuth from "../../utils/withAuth";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 const Home = () => {
+  //fetch all customers
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const [total, setTotal] = useState([]);
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/api/customers");
+      console.log("Total customers:", response.data.meta.total);
+      setTotal(response.data.meta.total);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
   return (
     <>
       <PageMeta title="Smart Collect" description="This is smart collect" />
@@ -20,16 +32,16 @@ const Home = () => {
             {/* <!-- Metric Item Start --> */}
             <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
               <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-                <Landmark className="text-gray-800 size-6 dark:text-white/90" />
+                <Users className="text-gray-800 size-6 dark:text-white/90" />
               </div>
 
               <div className="flex items-end justify-between mt-5">
                 <div>
                   <span className="text-lg text-gray-500 dark:text-gray-400">
-                    Active clients
+                    Total Customers
                   </span>
-                  <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-                    3,782
+                  <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
+                    {total}
                   </h4>
                 </div>
               </div>
