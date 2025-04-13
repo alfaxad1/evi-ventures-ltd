@@ -25,13 +25,7 @@ interface CustomerData {
 }
 
 const CustomersForm = () => {
-  // const navigate = useNavigate();
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-  //   if (!token) {
-  //     navigate("/signin");
-  //   }
-  // }, [navigate]);
+
   const [formData, setFormData] = useState<CustomerData>({
     firstName: "",
     lastName: "",

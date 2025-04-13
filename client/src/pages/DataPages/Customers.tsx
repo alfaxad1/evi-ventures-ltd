@@ -9,6 +9,11 @@ import {
 } from "../../../src/components/ui/table";
 import { useNavigate } from "react-router";
 import withAuth from "../../utils/withAuth";
+import { useModal } from "../../hooks/useModal";
+import { Modal } from "../../components/ui/modal";
+import Label from "../../components/form/Label";
+import Input from "../../components/form/input/InputField";
+import Button from "../../components/ui/button/Button";
 
 interface Customer {
   id: number;
@@ -20,19 +25,18 @@ interface Customer {
 }
 
 const Customers = () => {
+  const { isOpen, openModal, closeModal } = useModal();
   const navigate = useNavigate();
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-  //   if (!token) {
-  //     navigate("/signin");
-  //   }
-  // }, [navigate]);
+
+  const [customerData, setCustomerData] = useState<Customer[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null
+  );
 
   useEffect(() => {
     fetchData();
-  });
+  }, []);
 
-  const [customerData, setCustomerData] = useState<Customer[]>([]);
   const fetchData = async () => {
     try {
       const response = await axios.get("http://localhost:8000/api/customers");
@@ -42,6 +46,35 @@ const Customers = () => {
       console.error("Error fetching data:", error);
     }
   };
+
+  const handleEditClick = (customer: Customer) => {
+    setSelectedCustomer(customer); // Set the selected customer
+    openModal(); // Open the modal
+  };
+
+  const handleInputChange = (field: keyof Customer, value: string) => {
+    if (selectedCustomer) {
+      setSelectedCustomer({ ...selectedCustomer, [field]: value });
+    }
+  };
+
+  const handleSaveClick = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedCustomer) {
+      try {
+        const response = await axios.put(
+          `http://localhost:8000/api/customers/${selectedCustomer.id}`,
+          selectedCustomer
+        );
+        console.log("Customer updated successfully:", response.data);
+        //fetchData(); // Refresh the data
+        //closeModal(); // Close the modal
+      } catch (error) {
+        console.error("Error updating customer:", error);
+      }
+    }
+  };
+
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
@@ -121,11 +154,104 @@ const Customers = () => {
                     >
                       Apply for Loan
                     </button>
+
+                    <button
+                      onClick={() => handleEditClick(customer)}
+                      className="text-blue-500 hover:text-blue-700 ml-4"
+                    >
+                      Edit
+                    </button>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+          <Modal
+            isOpen={isOpen}
+            onClose={closeModal}
+            className="max-w-[700px] m-4"
+          >
+            <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+              <div className="px-2 pr-14">
+                <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+                  Edit Information
+                </h4>
+              </div>
+              <form
+                className="flex flex-col"
+                onSubmit={(e) => handleSaveClick(e)}
+              >
+                <div className="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
+                  <div className="mt-7">
+                    <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
+                      <div className="col-span-2 lg:col-span-1">
+                        <Label>First Name</Label>
+                        <Input
+                          type="text"
+                          value={selectedCustomer?.first_name || ""}
+                          onChange={(e) =>
+                            handleInputChange("first_name", e.target.value)
+                          }
+                        />
+                      </div>
+
+                      <div className="col-span-2 lg:col-span-1">
+                        <Label>Phone</Label>
+                        <Input
+                          type="text"
+                          value={selectedCustomer?.phone || ""}
+                          onChange={(e) =>
+                            handleInputChange("phone", e.target.value)
+                          }
+                        />
+                      </div>
+
+                      <div className="col-span-2 lg:col-span-1">
+                        <Label>ID Number</Label>
+                        <Input
+                          type="text"
+                          value={selectedCustomer?.national_id || ""}
+                          onChange={(e) =>
+                            handleInputChange("national_id", e.target.value)
+                          }
+                        />
+                      </div>
+
+                      <div className="col-span-2 lg:col-span-1">
+                        <Label>Address</Label>
+                        <Input
+                          type="text"
+                          value={selectedCustomer?.address || ""}
+                          onChange={(e) =>
+                            handleInputChange("address", e.target.value)
+                          }
+                        />
+                      </div>
+
+                      <div className="col-span-2">
+                        <Label>Occupation</Label>
+                        <Input
+                          type="text"
+                          value={selectedCustomer?.occupation || ""}
+                          onChange={(e) =>
+                            handleInputChange("occupation", e.target.value)
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
+                  <Button size="sm" variant="outline" onClick={closeModal}>
+                    Close
+                  </Button>
+                  <Button size="sm" type="submit">
+                    Save Changes
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </Modal>
         </div>
       </div>
     </div>

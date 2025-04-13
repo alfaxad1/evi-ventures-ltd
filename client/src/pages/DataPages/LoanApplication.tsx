@@ -8,13 +8,7 @@ import Button from "../../components/ui/button/Button";
 import withAuth from "../../utils/withAuth";
 
 const LoanApplication = () => {
-  // const navigate = useNavigate();
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-  //   if (!token) {
-  //     navigate("/signin");
-  //   }
-  // }, [navigate]);
+  
 
   const [formData, setFormData] = useState({});
   const [options, setOptions] = useState<{ value: string; label: string }[]>(
