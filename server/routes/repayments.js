@@ -40,9 +40,8 @@ const validateRepaymentData = (req, res, next) => {
 
   next();
 };
-
-// Get all repayments with loan details
-router.get("/", async (req, res) => {
+//get all repayments of status pending with loan details
+router.get("/pending", async (req, res) => {
   try {
     const sql = `
       SELECT r.*, l.total_amount, l.status as loan_status, 
@@ -50,12 +49,13 @@ router.get("/", async (req, res) => {
       FROM repayments r
       JOIN loans l ON r.loan_id = l.id
       JOIN customers c ON l.customer_id = c.id
+      WHERE r.status = 'pending'
     `;
     const [results] = await connection.promise().query(sql);
     res.status(200).json(results);
   } catch (err) {
-    console.error("Error getting repayments:", err);
-    res.status(500).json({ error: "Error getting repayments" });
+    console.error("Error getting pending repayments:", err);
+    res.status(500).json({ error: "Error getting pending repayments" });
   }
 });
 

@@ -38,7 +38,7 @@ const Home = () => {
               <div className="flex items-end justify-between mt-5">
                 <div>
                   <span className="text-lg text-gray-500 dark:text-gray-400">
-                    Total Customers
+                    Customers - Active
                   </span>
                   <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
                     {total}
