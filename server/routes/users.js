@@ -19,6 +19,27 @@ router.get("/", (req, res) => {
   });
 });
 
+//get all officers
+router.get("/officers", async (req, res) => {
+  try {
+    // Query to get all customers with the role of 'officer'
+    const [officers] = await connection
+      .promise()
+      .query("SELECT * FROM users WHERE role = 'officer'");
+
+    // Count the number of officers
+    const count = officers.length;
+
+    res.status(200).json({
+      count, // Total number of officers
+      data: officers, // List of officers
+    });
+  } catch (err) {
+    console.error("Error getting officers:", err);
+    res.status(500).json({ error: "Failed to retrieve officers" });
+  }
+});
+
 //get a user
 router.get("/:id", (req, res) => {
   const sql = "SELECT * FROM users WHERE id = ?";
@@ -62,7 +83,7 @@ router.post("/register", (req, res) => {
       req.body.email,
       hash,
       req.body.role.toLowerCase(),
-      req.body.isActive,
+      (req.body.isActive = 1),
     ];
     connection.query(sql, [values], (err, result) => {
       if (err) return res.status(500).json({ error: "error registering user" });
@@ -79,6 +100,9 @@ router.post("/login", (req, res) => {
   connection.query(sql, [req.body.email], (err, result) => {
     if (err) return res.status(500).json({ error: "error logging in user" });
     if (result.length > 0) {
+      if (!result[0].is_active) {
+        return res.status(403).json({ error: "User account is inactive" });
+      }
       bcrypt.compare(req.body.password, result[0].password, (err, response) => {
         if (err)
           return res.status(500).json({ error: "error comparing password" });

@@ -6,22 +6,70 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 const Home = () => {
+  const [customersCount, setCustomersCount] = useState([]);
+  const [approvedLoansCount, setApprovedLoansCount] = useState([]);
+  const [rejectedLoansCount, setRejectedLoansCount] = useState([]);
+  const [pendingLoansCount, setPendingLoansCount] = useState([]);
+
   //fetch all customers
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const [total, setTotal] = useState([]);
-
-  const fetchData = async () => {
+  const fetchCustomers = async () => {
     try {
       const response = await axios.get("http://localhost:8000/api/customers");
       console.log("Total customers:", response.data.meta.total);
-      setTotal(response.data.meta.total);
+      setCustomersCount(response.data.meta.total);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
+
+  //fetch all approved loans
+  const fetchLoans = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/api/loans/loan-details"
+      );
+      console.log("number", response.data.length);
+      setApprovedLoansCount(response.data.length);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+  useEffect(() => {
+    fetchLoans();
+  }, []);
+
+  const fetchRejectedLoans = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/api/loansApplication/rejected"
+      );
+      setRejectedLoansCount(response.data.length);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  useEffect(() => {
+    fetchRejectedLoans();
+  }, []);
+
+  const fetchPendingLoans = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/api/loansApplication/pending"
+      );
+      console.log("Pending loans fetched successfully:", response.data);
+      setPendingLoansCount(response.data.length);
+    } catch (error) {
+      console.error("Error fetching pending loans:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPendingLoans();
+  }, []);
 
   return (
     <>
@@ -41,7 +89,7 @@ const Home = () => {
                     Customers - Active
                   </span>
                   <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
-                    {total}
+                    {customersCount}
                   </h4>
                 </div>
               </div>
@@ -56,10 +104,10 @@ const Home = () => {
               <div className="flex items-end justify-between mt-5">
                 <div>
                   <span className="text-lg text-gray-500 dark:text-gray-400">
-                    Total Volume - Active
+                    Approved Loans
                   </span>
-                  <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-                    5,359
+                  <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
+                    {approvedLoansCount}
                   </h4>
                 </div>
               </div>
@@ -74,10 +122,10 @@ const Home = () => {
               <div className="flex items-end justify-between mt-5">
                 <div>
                   <span className="text-lg text-gray-500 dark:text-gray-400">
-                    Total Value - Active
+                    Rejected Loans
                   </span>
-                  <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-                    5,359
+                  <h4 className="mt-2 font-bold text-center text-gray-800 text-title-sm dark:text-white/90">
+                    {rejectedLoansCount}
                   </h4>
                 </div>
               </div>
@@ -92,10 +140,10 @@ const Home = () => {
               <div className="flex items-end justify-between mt-5">
                 <div>
                   <span className="text-lg text-gray-500 dark:text-gray-400">
-                    Total Users - Active
+                    Pending Loans
                   </span>
-                  <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-                    5,359
+                  <h4 className="mt-2 font-bold text-center text-gray-800 text-title-sm dark:text-white/90">
+                    {pendingLoansCount}
                   </h4>
                 </div>
               </div>

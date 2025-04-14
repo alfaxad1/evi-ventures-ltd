@@ -1,5 +1,4 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
+import withAuth from "../../utils/withAuth";
 import {
   Table,
   TableBody,
@@ -7,39 +6,43 @@ import {
   TableHeader,
   TableRow,
 } from "../../../src/components/ui/table";
-import withAuth from "../../utils/withAuth";
-//import { useNavigate } from "react-router";
-interface rejectedLoans {
+import { useEffect, useState } from "react";
+import axios from "axios";
+
+interface pendingRepayment {
   id: number;
-  customer_full_name: string;
-  national_id: string;
-  phone: string;
-  occupation: string;
-  address: string;
-  monthly_income: number;
-  product_name: string;
   amount: number;
-  purpose: string;
-  rejection_reason: string;
+  due_date: string;
+  paid_date: string;
+  mpesa_code: string;
+  created_at: string;
+  total_amount: number;
+  loan_status: string;
+  customer_name: string;
 }
 
-const RejectedLoans = () => {
-  const [rejectedLoans, setRejectedLoans] = useState<rejectedLoans[]>([]);
-
-  const fetchRejectedLoans = async () => {
+const PendingRepayments = () => {
+  const [pendingRepayments, setPendingRepayments] = useState<
+    pendingRepayment[]
+  >([]);
+  
+  const fetchPendingRepayments = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/loansApplication/rejected"
+        "http://localhost:8000/api/loansApplication/pending"
       );
-      console.log("Rejected loans fetched successfully:", response.data);
-      setRejectedLoans(response.data);
+      console.log("Pending repayments fetched successfully:", response.data);
+      setPendingRepayments(response.data);
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching pending repayments:", error);
     }
   };
   useEffect(() => {
-    fetchRejectedLoans();
+    fetchPendingRepayments();
   }, []);
+
+  console.log("Pending repayments:", pendingRepayments);
+
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
@@ -58,37 +61,7 @@ const RejectedLoans = () => {
                   isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
-                  National ID
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Phone Number
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Occupation
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Address
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Monthly Income
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Loan Product
+                  Loan Status
                 </TableCell>
                 <TableCell
                   isHeader
@@ -100,50 +73,75 @@ const RejectedLoans = () => {
                   isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
-                  Purpose
+                  Mpesa Reference
                 </TableCell>
                 <TableCell
                   isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
-                  Rejection Reason
+                  Paid Date
+                </TableCell>
+                <TableCell
+                  isHeader
+                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Due Date
+                </TableCell>
+
+                <TableCell
+                  isHeader
+                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Created At
+                </TableCell>
+
+                <TableCell
+                  isHeader
+                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Actions
                 </TableCell>
               </TableRow>
             </TableHeader>
 
             {/* Table Body */}
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-              {rejectedLoans.map((loan) => (
-                <TableRow key={loan.id}>
+              {pendingRepayments.map((repayment) => (
+                <TableRow key={repayment.id}>
                   <TableCell className="px-5 py-4 sm:px-6 text-start">
-                    {loan.customer_full_name}
+                    {repayment.customer_name}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    {loan.national_id}
+                    {repayment.loan_status}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    {loan.phone}
+                    {repayment.amount}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    {loan.occupation}
+                    {repayment.mpesa_code}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                    {repayment.paid_date}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                    {repayment.due_date}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                    {repayment.created_at}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {loan.address}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {loan.monthly_income}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {loan.product_name}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {loan.amount}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {loan.purpose}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {loan.rejection_reason}
+                    <button
+                      className="bg-success-500 text-white text-sm px-4 py-2 rounded-md mb-2 w-20"
+                      onClick={() => handleApprove(repayment.id)}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      className="bg-error-500 text-white text-sm px-4 py-2 rounded-md mr-2 w-20"
+                      onClick={() => handleReject(repayment.id)}
+                    >
+                      Reject
+                    </button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -155,6 +153,5 @@ const RejectedLoans = () => {
   );
 };
 
-const AuthenticatedRejectedLoans = withAuth(RejectedLoans);
-
-export default AuthenticatedRejectedLoans;
+const AuthenticatedPendingRepayments = withAuth(PendingRepayments);
+export default AuthenticatedPendingRepayments;

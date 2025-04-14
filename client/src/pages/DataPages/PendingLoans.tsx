@@ -27,13 +27,7 @@ interface pendingLoan {
 }
 
 const PendingLoans = () => {
-  // const navigate = useNavigate();
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-  //   if (!token) {
-  //     navigate("/signin");
-  //   }
-  // }, [navigate]);
+
   const [pendingLoans, setPendingLoans] = useState<pendingLoan[]>([]);
 
   const fetchPendingLoans = async () => {

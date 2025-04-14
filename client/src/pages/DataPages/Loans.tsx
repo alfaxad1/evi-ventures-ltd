@@ -41,6 +41,7 @@ const Loans = () => {
       );
       console.log("Data fetched successfully:", response.data);
       setLoansData(response.data);
+      console.log("number", response.data.length);
     } catch (error) {
       console.error("Error fetching data:", error);
     }

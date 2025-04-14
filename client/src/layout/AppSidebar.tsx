@@ -55,7 +55,7 @@ const othersItems: NavItem[] = [
     icon: <RotateCcw />,
     name: "Repayments",
     subItems: [
-      { name: "Repayment", path: "/", pro: false },
+      { name: "Repayment", path: "/pending-repayments", pro: false },
       { name: "Repayment", path: "/", pro: false },
     ],
   },

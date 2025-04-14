@@ -52,7 +52,14 @@ router.get("/pending", async (req, res) => {
       WHERE r.status = 'pending'
     `;
     const [results] = await connection.promise().query(sql);
-    res.status(200).json(results);
+
+    // Count the number of pending repayments
+    const count = results.length;
+
+    res.status(200).json({
+      count,
+      data: results,
+    });
   } catch (err) {
     console.error("Error getting pending repayments:", err);
     res.status(500).json({ error: "Error getting pending repayments" });
