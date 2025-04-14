@@ -8,8 +8,24 @@ import Button from "../../components/ui/button/Button";
 import withAuth from "../../utils/withAuth";
 import { toast, ToastContainer } from "react-toastify";
 
+interface LoanApplicationData {
+  productId: number;
+  amount: number;
+  purpose: string;
+  comments: string;
+  customerId: number;
+  officerId: number;
+}
+
 const LoanApplication = () => {
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState<LoanApplicationData>({
+    amount: 0,
+    purpose: "",
+    comments: "",
+    productId: 0,
+    customerId: 0,
+    officerId: 0,
+  });
   const [options, setOptions] = useState<{ value: string; label: string }[]>(
     []
   );
@@ -54,8 +70,8 @@ const LoanApplication = () => {
   useEffect(() => {
     setFormData((prevFormData) => ({
       ...prevFormData,
-      customerId: customerId,
-      officerId: userId,
+      customerId: customerId ? parseInt(customerId) : 0,
+      officerId: userId ? parseInt(userId) : 0,
     }));
   }, [customerId, userId]);
 
@@ -63,12 +79,12 @@ const LoanApplication = () => {
 
   const resetForm = () => {
     setFormData({
-      amount: "",
+      amount: 0,
       purpose: "",
       comments: "",
       productId: 0,
-      customerId: 0,
-      officerId: 0,
+      customerId: 0,  
+      officerId: 0
     });
   };
 
@@ -106,6 +122,7 @@ const LoanApplication = () => {
             <div>
               <Label htmlFor="amount">Amount</Label>
               <Input
+                value={formData.amount}
                 type="number"
                 placeholder="Amount"
                 name="amount"

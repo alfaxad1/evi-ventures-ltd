@@ -25,6 +25,8 @@ interface CustomerData {
   createdBy?: number;
 }
 
+const userId = localStorage.getItem("userId");
+
 const CustomersForm = () => {
   const [formData, setFormData] = useState<CustomerData>({
     firstName: "",
@@ -37,7 +39,7 @@ const CustomersForm = () => {
     county: "",
     occupation: "",
     monthlyIncome: 0,
-    createdBy: 1,
+    createdBy: userId ? parseInt(userId) : undefined,
   });
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({

@@ -86,6 +86,8 @@ router.post("/register", (req, res) => {
       (req.body.isActive = 1),
     ];
     connection.query(sql, [values], (err, result) => {
+      console.log(values);
+
       if (err) return res.status(500).json({ error: "error registering user" });
       res
         .status(200)

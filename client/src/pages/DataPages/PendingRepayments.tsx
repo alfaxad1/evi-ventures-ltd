@@ -25,14 +25,15 @@ const PendingRepayments = () => {
   const [pendingRepayments, setPendingRepayments] = useState<
     pendingRepayment[]
   >([]);
-  
+
   const fetchPendingRepayments = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/loansApplication/pending"
+        "http://localhost:8000/api/repayments/pending"
       );
       console.log("Pending repayments fetched successfully:", response.data);
-      setPendingRepayments(response.data);
+
+      setPendingRepayments(response.data.data);
     } catch (error) {
       console.error("Error fetching pending repayments:", error);
     }
@@ -124,24 +125,24 @@ const PendingRepayments = () => {
                     {repayment.paid_date}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    {repayment.due_date}
+                    {repayment.due_date.split(" ")[0]}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    {repayment.created_at}
+                    {repayment.created_at.split("T")[0] +
+                      " " +
+                      repayment.created_at.split("T")[1].split(".")[0]}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    <button
-                      className="bg-success-500 text-white text-sm px-4 py-2 rounded-md mb-2 w-20"
-                      onClick={() => handleApprove(repayment.id)}
-                    >
-                      Approve
-                    </button>
-                    <button
-                      className="bg-error-500 text-white text-sm px-4 py-2 rounded-md mr-2 w-20"
-                      onClick={() => handleReject(repayment.id)}
-                    >
-                      Reject
-                    </button>
+                    <div className="flex flex-col">
+                      <button className="bg-success-500 text-white text-sm  py-1 rounded-md mb-2 w-16">
+                        Approve
+                      </button>
+                    </div>
+                    <div>
+                      <button className="bg-error-500 text-white text-sm  py-1 rounded-md mr-2 w-16">
+                        Reject
+                      </button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

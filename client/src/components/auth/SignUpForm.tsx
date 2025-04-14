@@ -24,18 +24,21 @@ export default function SignUpForm() {
     role: "",
     password: "",
   });
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ 
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+
   const handleSelectChange = (value: string) => {
     setFormData({
       ...formData,
       role: value,
     });
   };
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+  
 
   const navigate = useNavigate();
   const handleSubmit = async (e: React.FormEvent) => {
@@ -128,6 +131,7 @@ export default function SignUpForm() {
                   </Label>
                   <div className="relative">
                     <Input
+                      name="password"
                       placeholder="Enter your password"
                       onChange={(e) => handleChange(e)}
                       type={showPassword ? "text" : "password"}

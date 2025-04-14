@@ -27,7 +27,6 @@ interface pendingLoan {
 }
 
 const PendingLoans = () => {
-
   const [pendingLoans, setPendingLoans] = useState<pendingLoan[]>([]);
 
   const fetchPendingLoans = async () => {
@@ -183,18 +182,22 @@ const PendingLoans = () => {
                     {loan.comments}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    <button
-                      className="bg-success-500 text-white text-sm px-4 py-2 rounded-md mb-2 w-20"
-                      onClick={() => handleApprove(loan.application_id)}
-                    >
-                      Approve
-                    </button>
-                    <button
-                      className="bg-error-500 text-white text-sm px-4 py-2 rounded-md mr-2 w-20"
-                      onClick={() => handleReject(loan.application_id)}
-                    >
-                      Reject
-                    </button>
+                    <div className="flex flex-col">
+                      <button
+                        onClick={() => handleApprove(loan.application_id)}
+                        className="bg-success-500 text-white text-sm  py-1 rounded-md mb-2 w-16"
+                      >
+                        Approve
+                      </button>
+                    </div>
+                    <div>
+                      <button
+                        onClick={() => handleReject(loan.application_id)}
+                        className="bg-error-500 text-white text-sm  py-1 rounded-md mr-2 w-16"
+                      >
+                        Reject
+                      </button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
