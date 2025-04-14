@@ -25,7 +25,7 @@ export default function SignUpForm() {
     password: "",
   });
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
+    setFormData({ 
       ...formData,
       [e.target.name]: e.target.value,
     });

@@ -88,8 +88,9 @@ const CustomersForm = () => {
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response) {
         console.error("Error saving:", err.response.data);
-        document.getElementById("error-message")!.innerHTML =
-          err.response.data.error || err.response.data.errors?.[0]?.msg;
+        toast.error(
+          err.response.data.error || err.response.data.errors?.[0]?.msg
+        );
       } else {
         console.error("An unexpected error occurred", err);
       }

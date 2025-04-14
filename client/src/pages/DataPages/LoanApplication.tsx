@@ -6,10 +6,9 @@ import Select from "../../components/form/Select";
 import axios from "axios";
 import Button from "../../components/ui/button/Button";
 import withAuth from "../../utils/withAuth";
+import { toast, ToastContainer } from "react-toastify";
 
 const LoanApplication = () => {
-  
-
   const [formData, setFormData] = useState({});
   const [options, setOptions] = useState<{ value: string; label: string }[]>(
     []
@@ -82,6 +81,7 @@ const LoanApplication = () => {
       );
       resetForm();
       console.log("Form submitted successfully:", response);
+      toast.success(response.data.message);
     } catch (error) {
       console.error("Error submitting form:", error);
     }
@@ -89,6 +89,7 @@ const LoanApplication = () => {
 
   return (
     <>
+      <ToastContainer position="bottom-right" />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <form onSubmit={(e) => save(e)}>
           <div className="space-y-6">
