@@ -140,7 +140,8 @@ router.post("/", validateRepaymentData, async (req, res) => {
 // Update repayment and handle status changes
 router.put("/:id", validateRepaymentData, async (req, res) => {
   const { id } = req.params;
-  const { loanId, amount, dueDate, paidDate, status, mpesaCode } = req.body;
+  const { loanId, amount, status, mpesaCode, customerId, initiatedBy } =
+    req.body;
 
   try {
     await connection.promise().beginTransaction();
@@ -157,22 +158,11 @@ router.put("/:id", validateRepaymentData, async (req, res) => {
 
     // 2. Update the repayment
     const updateSql = `
-      UPDATE repayments 
-      SET loan_id = ?, amount = ?, due_date = ?, 
-          paid_date = ?, status = ?, mpesa_code = ? 
-      WHERE id = ?
-    `;
-    await connection
-      .promise()
-      .query(updateSql, [
-        loanId,
-        amount,
-        dueDate,
-        paidDate,
-        status,
-        mpesaCode,
-        id,
-      ]);
+    UPDATE repayments 
+    SET status = ?
+    WHERE id = ?
+  `;
+    await connection.promise().query(updateSql, [status, id]);
 
     // 3. Handle status changes that affect loan balance
     const statusChangedToPaid =
@@ -185,10 +175,18 @@ router.put("/:id", validateRepaymentData, async (req, res) => {
       if (mpesaCode && status === "paid") {
         const mpesaSql = `
           INSERT INTO mpesa_transactions 
-            (loan_id, amount, type, mpesa_code, status, timestamp) 
-          VALUES (?, ?, 'repayment', ?, 'completed', NOW())
+            (customer_id, loan_id, amount, type, mpesa_code, status, initiated_by, created_at) 
+          VALUES (?, ?, ?, 'repayment', ?, 'completed', ?, NOW())
         `;
-        await connection.promise().query(mpesaSql, [loanId, amount, mpesaCode]);
+        await connection
+          .promise()
+          .query(mpesaSql, [
+            customerId,
+            loanId,
+            amount,
+            mpesaCode,
+            initiatedBy,
+          ]);
       }
 
       // Update loan status and balance

@@ -113,7 +113,14 @@ const PendingRepayments = () => {
                     {repayment.customer_name}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    {repayment.loan_status}
+                    <span
+                      style={{
+                        color:
+                          repayment.loan_status === "active" ? "green" : "red",
+                      }}
+                    >
+                      {repayment.loan_status}
+                    </span>
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                     {repayment.amount}

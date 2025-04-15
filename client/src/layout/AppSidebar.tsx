@@ -28,8 +28,8 @@ const navItems: NavItem[] = [
     name: "Customers",
 
     subItems: [
-      { name: "All Customers", path: "/customers", pro: false },
       { name: "Register Customer", path: "/register-customer", pro: false },
+      { name: "All Customers", path: "/customers", pro: false },
     ],
   },
   {
@@ -55,8 +55,8 @@ const othersItems: NavItem[] = [
     icon: <RotateCcw />,
     name: "Repayments",
     subItems: [
-      { name: "Repayment", path: "/pending-repayments", pro: false },
-      { name: "Repayment", path: "/", pro: false },
+      { name: "Pending Repayments", path: "/pending-repayments", pro: false },
+      { name: "Repayment", path: "#", pro: false },
     ],
   },
 ];
