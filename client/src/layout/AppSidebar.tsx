@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router";
 
 // Assume these icons are imported from an icon library
 import { ChevronDownIcon, HorizontaLDots } from "../icons";
-import { Banknote, FilePlus, GridIcon, RotateCcw, Users } from "lucide-react";
+import { Banknote, GridIcon, RotateCcw, Users } from "lucide-react";
 
 import { useSidebar } from "../context/SidebarContext";
 
@@ -32,12 +32,7 @@ const navItems: NavItem[] = [
       { name: "All Customers", path: "/customers", pro: false },
     ],
   },
-  {
-    icon: <FilePlus />,
-    name: "Loan Application",
 
-    subItems: [{ name: "Apply Loan", path: "#", pro: false }],
-  },
   {
     icon: <Banknote />,
     name: "Loans",
@@ -56,7 +51,7 @@ const othersItems: NavItem[] = [
     name: "Repayments",
     subItems: [
       { name: "Pending Repayments", path: "/pending-repayments", pro: false },
-      { name: "Repayment", path: "#", pro: false },
+      { name: "Approved Repayment", path: "/approved-repayments", pro: false },
     ],
   },
 ];

@@ -67,6 +67,33 @@ router.get("/pending", async (req, res) => {
   }
 });
 
+//approved repayments
+router.get("/approved", async (req, res) => {
+  try {
+    const sql = `
+      SELECT r.*, l.total_amount, l.status as loan_status,
+             c.id as customer_id,  
+             CONCAT(c.first_name, ' ', c.last_name) as customer_name
+      FROM repayments r
+      JOIN loans l ON r.loan_id = l.id
+      JOIN customers c ON l.customer_id = c.id
+      WHERE r.status = 'paid'
+    `;
+    const [results] = await connection.promise().query(sql);
+
+    // Count the number of pending repayments
+    const count = results.length;
+
+    res.status(200).json({
+      count,
+      data: results,
+    });
+  } catch (err) {
+    console.error("Error getting pending repayments:", err);
+    res.status(500).json({ error: "Error getting pending repayments" });
+  }
+});
+
 // Get repayment by ID with full details
 router.get("/:id", async (req, res) => {
   try {
