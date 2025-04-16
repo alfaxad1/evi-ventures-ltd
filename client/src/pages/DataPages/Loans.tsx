@@ -41,11 +41,12 @@ const Loans = () => {
       );
       console.log("Data fetched successfully:", response.data);
       setLoansData(response.data);
-      console.log("number", response.data.length);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
+
+  const [createdBy, setCreatedBy] = useState<number>(0);
   const [loanId, setLoanId] = useState<number>(0);
   const [dueDate, setDueDate] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
@@ -56,6 +57,7 @@ const Loans = () => {
   useEffect(() => {
     setPaidDate(new Date().toISOString().split("T")[0]);
     setStatus("pending");
+    setCreatedBy(parseInt(localStorage.getItem("userId") || "0"));
   }, []);
 
   const handleRepay = async (loanId: number, dueDate: string) => {
@@ -73,7 +75,9 @@ const Loans = () => {
     paidDate,
     status,
     mpesaCode,
+    createdBy,
   };
+
   const handleSaveClick = async (e: React.FormEvent) => {
     e.preventDefault();
     try {

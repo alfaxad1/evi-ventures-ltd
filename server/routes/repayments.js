@@ -93,7 +93,8 @@ router.get("/:id", async (req, res) => {
 
 // Create a new repayment with loan status updates
 router.post("/", validateRepaymentData, async (req, res) => {
-  const { loanId, amount, dueDate, paidDate, status, mpesaCode } = req.body;
+  const { loanId, amount, dueDate, paidDate, status, mpesaCode, createdBy } =
+    req.body;
 
   try {
     await connection.promise().beginTransaction();
@@ -101,12 +102,20 @@ router.post("/", validateRepaymentData, async (req, res) => {
     // 1. Create the repayment record
     const createSql = `
       INSERT INTO repayments 
-        (loan_id, amount, due_date, paid_date, status, mpesa_code) 
-      VALUES (?, ?, ?, ?, ?, ?)
+        (loan_id, amount, due_date, paid_date, status, mpesa_code, created_by) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
     const [createResult] = await connection
       .promise()
-      .query(createSql, [loanId, amount, dueDate, paidDate, status, mpesaCode]);
+      .query(createSql, [
+        loanId,
+        amount,
+        dueDate,
+        paidDate,
+        status,
+        mpesaCode,
+        createdBy,
+      ]);
 
     // 2. Update loan status and balance if payment is made
     if (status === "paid") {

@@ -120,7 +120,11 @@ router.get("/loan-details", async (req, res) => {
         l.total_amount,
         l.status,
         (SELECT SUM(amount) FROM repayments WHERE loan_id = l.id AND status = 'paid') as paid_amount,
-        (l.total_amount - IFNULL((SELECT SUM(amount) FROM repayments WHERE loan_id = l.id AND status = 'paid'), 0)) as remaining_balance,
+        -- Use remaining_balance if not NULL, otherwise calculate it dynamically
+        IFNULL(
+          l.remaining_balance, 
+          (l.total_amount - IFNULL((SELECT SUM(amount) FROM repayments WHERE loan_id = l.id AND status = 'paid'), 0))
+        ) as remaining_balance,
         DATEDIFF(l.due_date, CURDATE()) as days_remaining
       FROM loans l
       JOIN customers c ON l.customer_id = c.id
