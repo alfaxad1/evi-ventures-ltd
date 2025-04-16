@@ -44,7 +44,8 @@ const validateRepaymentData = (req, res, next) => {
 router.get("/pending", async (req, res) => {
   try {
     const sql = `
-      SELECT r.*, l.total_amount, l.status as loan_status, 
+      SELECT r.*, l.total_amount, l.status as loan_status,
+             c.id as customer_id,  
              CONCAT(c.first_name, ' ', c.last_name) as customer_name
       FROM repayments r
       JOIN loans l ON r.loan_id = l.id

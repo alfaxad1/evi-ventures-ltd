@@ -19,6 +19,9 @@ interface pendingRepayment {
   total_amount: number;
   loan_status: string;
   customer_name: string;
+  loan_id?: number;
+  customer_id?: number;
+  created_by?: number;
 }
 
 const PendingRepayments = () => {
@@ -43,6 +46,37 @@ const PendingRepayments = () => {
   }, []);
 
   console.log("Pending repayments:", pendingRepayments);
+
+  // const approvalData = {
+  //   loanId: pendingRepayments.loan_id,
+  //   amount: pendingRepayments.amount,
+  //   status: "paid",
+  //   mpesaCode: pendingRepayments.mpesa_code,
+  //   customerId: pendingRepayments.customer_id,
+  //   initiatedBy: pendingRepayments.created_by,
+  // };
+
+  const handleApprove = async (repayment: pendingRepayment) => {
+    const approvalData = {
+      loanId: repayment.loan_id,
+      amount: repayment.amount,
+      status: "paid",
+      mpesaCode: repayment.mpesa_code,
+      customerId: repayment.customer_id,
+      initiatedBy: repayment.created_by,
+    };
+
+    try {
+      const response = await axios.put(
+        `http://localhost:8000/api/repayments/${repayment.id}`,
+        approvalData
+      );
+      console.log("Approved successfully:", response.data);
+      fetchPendingRepayments();
+    } catch (error) {
+      console.error("Error approving repayment:", error);
+    }
+  };
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -141,13 +175,11 @@ const PendingRepayments = () => {
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                     <div className="flex flex-col">
-                      <button className="bg-success-500 text-white text-sm  py-1 rounded-md mb-2 w-16">
+                      <button
+                        onClick={() => handleApprove(repayment)}
+                        className="bg-success-500 text-white text-sm  py-1 rounded-md mb-2 w-16"
+                      >
                         Approve
-                      </button>
-                    </div>
-                    <div>
-                      <button className="bg-error-500 text-white text-sm  py-1 rounded-md mr-2 w-16">
-                        Reject
                       </button>
                     </div>
                   </TableCell>
