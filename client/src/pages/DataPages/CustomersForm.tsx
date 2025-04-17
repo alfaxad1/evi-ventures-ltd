@@ -102,7 +102,6 @@ const CustomersForm = () => {
   return (
     <>
       <ToastContainer position="bottom-right" />
-      <div className="text-error-500 text-left" id="error-message"></div>
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <div className="space-y-6">
           <div>
