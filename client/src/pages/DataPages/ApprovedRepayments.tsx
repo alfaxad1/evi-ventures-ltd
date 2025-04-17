@@ -100,7 +100,16 @@ const ApprovedRepayments = () => {
                       {repayment.mpesa_code}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {repayment.loan_status}
+                      <span
+                        style={{
+                          color:
+                            repayment.loan_status === "active"
+                              ? "green"
+                              : "red",
+                        }}
+                      >
+                        {repayment.loan_status}
+                      </span>
                     </TableCell>
                   </TableRow>
                 ))}

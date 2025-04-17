@@ -138,7 +138,7 @@ router.post("/", validateRepaymentData, async (req, res) => {
       .query(createSql, [
         loanId,
         amount,
-        dueDate,
+        dueDate, 
         paidDate,
         status,
         mpesaCode,

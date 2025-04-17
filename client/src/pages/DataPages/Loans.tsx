@@ -190,7 +190,13 @@ const Loans = () => {
                       {loan.remaining_balance}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.status}
+                      <span
+                        style={{
+                          color: loan.status === "active" ? "green" : "red",
+                        }}
+                      >
+                        {loan.status}
+                      </span>
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.due_date.split(" ")[0]}
