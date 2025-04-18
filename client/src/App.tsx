@@ -26,6 +26,7 @@ import AuthenticatedPendingRepayments from "./pages/DataPages/PendingRepayments"
 import AuthenticatedApprovedRepayments from "./pages/DataPages/ApprovedRepayments";
 import { LoanProducts } from "./pages/DataPages/LoanProducts";
 import { AddLoanProduct } from "./pages/DataPages/AddLoanProduct";
+import CustomerNew from "./pages/DataPages/CustomerNew";
 
 export default function App() {
   return (
@@ -71,6 +72,7 @@ export default function App() {
             />
             <Route path="/add-product" element={<AddLoanProduct />} />
             <Route path="/loan-products" element={<LoanProducts />} />
+            <Route path="/customer-new" element={<CustomerNew />} />
           </Route>
 
           {/* Auth Layout */}
