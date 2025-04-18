@@ -36,7 +36,7 @@ const upload = multer({
 
 // Create new customer with photo uploads
 router.post(
-  "/customers",
+  "/",
   upload.fields([
     { name: "national_id_photo", maxCount: 1 },
     { name: "passport_photo", maxCount: 1 },

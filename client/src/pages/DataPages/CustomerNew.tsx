@@ -342,11 +342,15 @@ const CustomerNew: React.FC = () => {
         });
       });
 
-      const response = await axios.post("/api/customers", formDataToSend, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await axios.post(
+        "http://localhost:8000/api/customerNew",
+        formDataToSend,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       alert("Customer created successfully!");
       console.log("Response:", response.data);
@@ -357,7 +361,7 @@ const CustomerNew: React.FC = () => {
         "Error submitting form:",
         axiosError.response?.data || axiosError.message
       );
-      alert("Failed to create customer. Please try again.");
+      //alert("Failed to create customer. Please try again.");
     }
   };
 
