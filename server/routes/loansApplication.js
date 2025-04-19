@@ -257,7 +257,9 @@ router.put("/approve/:id", async (req, res) => {
 
     const interestAmount =
       application[0].amount * (loanProduct[0].interest_rate / 100);
-    const totalAmount = application[0].amount + interestAmount;
+    const totalAmount =
+      parseInt(application[0].amount) + parseInt(interestAmount);
+    console.log("Total amount: ", totalAmount);
 
     const [loanResult] = await connection.promise().query(
       `INSERT INTO loans 

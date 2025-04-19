@@ -19,7 +19,6 @@ export const calculateRemainingBalance = async (loanId, connection) => {
   return total_amount - total_paid;
 };
 
-
 // function to detect defaults
 export const checkLoanDefaults = async (connection) => {
   try {
@@ -107,10 +106,21 @@ export const updateLoanStatus = async (loanId, connection) => {
     updateFields.overdue_since = due_date;
   }
 
-  await connection
-    .promise()
-    .query(`UPDATE loans SET ? WHERE id = ?`, [updateFields, loanId]);
+  // Add newStatus to updateFields
+  updateFields.status = newStatus;
+
+  try {
+    await connection
+      .promise()
+      .query(`UPDATE loans SET ? WHERE id = ?`, [updateFields, loanId]);
+  } catch (err) {
+    console.error("Error updating loan status:", err);
+  }
 
   // Check for defaults after update
-  await checkLoanDefaults(connection);
+  try {
+    await checkLoanDefaults(connection);
+  } catch (err) {
+    console.error("Error checking loan defaults:", err);
+  }
 };

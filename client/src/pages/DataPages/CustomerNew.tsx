@@ -411,7 +411,7 @@ const CustomerNew: React.FC = () => {
                 name="national_id_photo"
                 onChange={handleFileChange}
                 accept="image/*"
-                required
+                //required
                 className="mt-1 block w-full text-sm text-gray-500
                   file:mr-4 file:py-2 file:px-4
                   file:rounded-md file:border-0
