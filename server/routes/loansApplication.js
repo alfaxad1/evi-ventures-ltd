@@ -225,14 +225,24 @@ router.get("/:id", async (req, res) => {
 
 // Approve a loan application
 router.put("/approve/:id", async (req, res) => {
+  const { disbursedAmount } = req.body; // Get the disbursed amount from the request body
+
+  if (!disbursedAmount || disbursedAmount <= 0) {
+    return res
+      .status(400)
+      .json({
+        error: "Disbursed amount is required and must be greater than 0",
+      });
+  }
+
   try {
     await connection.promise().beginTransaction();
 
-    // 1. Update application status
+    // 1. Update application status to pending_disbursement
     const [updateResult] = await connection
       .promise()
       .query(
-        "UPDATE loan_applications SET status = 'approved', approval_date = NOW() WHERE id = ? AND status = 'pending'",
+        "UPDATE loan_applications SET status = 'pending_disbursement', approval_date = NOW() WHERE id = ? AND status = 'pending'",
         [req.params.id]
       );
 
@@ -248,31 +258,31 @@ router.put("/approve/:id", async (req, res) => {
       .promise()
       .query("SELECT * FROM loan_applications WHERE id = ?", [req.params.id]);
 
-    // 3. Create loan record
+    // 3. Get loan product details
     const [loanProduct] = await connection
       .promise()
       .query("SELECT * FROM loan_products WHERE id = ?", [
         application[0].product_id,
       ]);
 
+    // 4. Calculate interest and total amount
     const interestAmount =
-      application[0].amount * (loanProduct[0].interest_rate / 100);
-    const totalAmount =
-      parseInt(application[0].amount) + parseInt(interestAmount);
-    console.log("Total amount: ", totalAmount);
+      disbursedAmount * (loanProduct[0].interest_rate / 100);
+    const totalAmount = parseInt(disbursedAmount) + parseInt(interestAmount);
 
+    // 5. Create loan record with status pending_disbursement
     const [loanResult] = await connection.promise().query(
       `INSERT INTO loans 
       (application_id, customer_id, product_id, officer_id, 
-       principal, total_interest, total_amount, disbursement_date, due_date, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), 
-              DATE_ADD(NOW(), INTERVAL ? DAY), 'active')`,
+       principal, total_interest, total_amount, due_date, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 
+              DATE_ADD(NOW(), INTERVAL ? DAY), 'pending_disbursement')`,
       [
         req.params.id,
         application[0].customer_id,
         application[0].product_id,
         application[0].officer_id,
-        application[0].amount,
+        disbursedAmount,
         interestAmount,
         totalAmount,
         loanProduct[0].duration_days,
@@ -281,7 +291,8 @@ router.put("/approve/:id", async (req, res) => {
 
     await connection.promise().commit();
     res.status(200).json({
-      message: "Loan application approved and loan created",
+      message:
+        "Loan application approved and loan created with pending disbursement",
       loanId: loanResult.insertId,
     });
   } catch (err) {

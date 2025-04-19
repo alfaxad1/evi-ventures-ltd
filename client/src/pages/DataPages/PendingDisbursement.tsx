@@ -14,95 +14,70 @@ import { useModal } from "../../hooks/useModal";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
 
-interface pendingLoan {
+interface pendingDisbursementLoan {
   id: number;
-  customer_full_name: string;
+  customer_name: string;
   national_id: string;
   phone: string;
-  occupation: string;
-  address: string;
-  monthly_income: number;
-  product_name: string;
-  amount: number;
-  purpose: string;
-  comments: string;
-  application_id: number;
+  loan_product: string;
+  principal: number;
+  total_interest: number;
+  total_amount: number;
+  due_date: string;
+  days_remaining: number;
 }
 
-const PendingLoans = () => {
+const PendingDisbursement = () => {
   const { isOpen, openModal, closeModal } = useModal();
-  const [pendingLoans, setPendingLoans] = useState<pendingLoan[]>([]);
-  const [selectedApplicationId, setSelectedApplicationId] = useState<
-    number | null
-  >(null);
-  const [disbursedAmount, setDisbursedAmount] = useState<number | null>(null);
-  const [reason, setReason] = useState<string>("");
-  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+  const [pendingLoans, setPendingLoans] = useState<pendingDisbursementLoan[]>(
+    []
+  );
+  const [selectedLoanId, setSelectedLoanId] = useState<number | null>(null);
+  const [mpesaCode, setMpesaCode] = useState<string>("");
 
-  const fetchPendingLoans = async () => {
+  const fetchPendingDisbursementLoans = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/loansApplication/pending"
+        "http://localhost:8000/api/loans/loan-details/pending-disbursement"
       );
-      console.log("Pending loans fetched successfully:", response.data);
+      console.log(
+        "Pending disbursement loans fetched successfully:",
+        response.data
+      );
       setPendingLoans(response.data);
     } catch (error) {
-      console.error("Error fetching pending loans:", error);
+      console.error("Error fetching pending disbursement loans:", error);
     }
   };
 
   useEffect(() => {
-    fetchPendingLoans();
+    fetchPendingDisbursementLoans();
   }, []);
 
-  const handleApproveClick = (applicationId: number) => {
-    setSelectedApplicationId(applicationId); // Set the application ID for approval
-    setIsApproveModalOpen(true); // Open the approval modal
+  const handleDisburseClick = (loanId: number) => {
+    setSelectedLoanId(loanId); // Set the loan ID for disbursement
+    openModal(); // Open the modal
   };
 
-  const handleApproveSave = async (e: React.FormEvent) => {
+  const handleDisburseSave = async (e: React.FormEvent) => {
     e.preventDefault(); // Prevent form submission
-    if (!selectedApplicationId || !disbursedAmount || disbursedAmount <= 0) {
-      alert("Please enter a valid disbursed amount.");
+    if (!selectedLoanId || !mpesaCode) {
+      alert("Please enter a valid Mpesa code.");
       return;
     }
 
     try {
       await axios.put(
-        `http://localhost:8000/api/loansApplication/approve/${selectedApplicationId}`,
-        { disbursedAmount }
+        `http://localhost:8000/api/loans/disburse/${selectedLoanId}`,
+        { mpesaCode }
       );
-      console.log("Loan approved successfully");
-      fetchPendingLoans(); // Refresh the list after approval
-      setIsApproveModalOpen(false); // Close the modal
-      setDisbursedAmount(null); // Clear the disbursed amount
-      setSelectedApplicationId(null); // Clear the selected application ID
+      console.log("Loan disbursed successfully");
+      fetchPendingDisbursementLoans(); // Refresh the list after disbursement
+      closeModal(); // Close the modal
+      setMpesaCode(""); // Clear the Mpesa code input
+      setSelectedLoanId(null); // Clear the selected loan ID
     } catch (error) {
-      console.error("Error approving loan:", error);
-    }
-  };
-
-  const handleRejectClick = (applicationId: number) => {
-    setSelectedApplicationId(applicationId); // Set the application ID for rejection
-    openModal(); // Open the rejection modal
-  };
-
-  const handleRejectSave = async (e: React.FormEvent) => {
-    e.preventDefault(); // Prevent form submission
-    if (!selectedApplicationId) return; // Ensure an application ID is selected
-
-    try {
-      await axios.put(
-        `http://localhost:8000/api/loansApplication/reject/${selectedApplicationId}`,
-        { reason: reason }
-      );
-      console.log("Loan rejected successfully");
-      fetchPendingLoans();
-      closeModal();
-      setReason("");
-      setSelectedApplicationId(null);
-    } catch (error) {
-      console.error("Error rejecting loan:", error);
+      console.error("Error disbursing loan:", error);
     }
   };
 
@@ -137,43 +112,37 @@ const PendingLoans = () => {
                     isHeader
                     className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                   >
-                    Occupation
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Address
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Monthly Income
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                  >
                     Loan Product
                   </TableCell>
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                   >
-                    Amount
+                    Principal
                   </TableCell>
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                   >
-                    Purpose
+                    Total Interest
                   </TableCell>
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                   >
-                    Comments
+                    Total Amount
+                  </TableCell>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Due Date
+                  </TableCell>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Days Remaining
                   </TableCell>
                   <TableCell
                     isHeader
@@ -189,7 +158,7 @@ const PendingLoans = () => {
                 {pendingLoans.map((loan) => (
                   <TableRow key={loan.id}>
                     <TableCell className="px-5 py-4 sm:px-6 text-start">
-                      {loan.customer_full_name}
+                      {loan.customer_name}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       {loan.national_id}
@@ -198,45 +167,30 @@ const PendingLoans = () => {
                       {loan.phone}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {loan.occupation}
+                      {loan.loan_product}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.address}
+                      {loan.principal}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.monthly_income}
+                      {loan.total_interest}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.product_name}
+                      {loan.total_amount}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.amount}
+                      {loan.due_date}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.purpose}
+                      {loan.days_remaining}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.comments}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      <div className="flex flex-col">
-                        <button
-                          onClick={() =>
-                            handleApproveClick(loan.application_id)
-                          }
-                          className="bg-success-500 text-white text-sm  py-1 rounded-md mb-2 w-16"
-                        >
-                          Approve
-                        </button>
-                      </div>
-                      <div>
-                        <button
-                          onClick={() => handleRejectClick(loan.application_id)}
-                          className="bg-error-500 text-white text-sm  py-1 rounded-md mr-2 w-16"
-                        >
-                          Reject
-                        </button>
-                      </div>
+                      <Button
+                        onClick={() => handleDisburseClick(loan.id)}
+                        className="bg-success-500 text-white text-sm py-1 rounded-md"
+                      >
+                        Disburse
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -246,65 +200,27 @@ const PendingLoans = () => {
         </div>
       </div>
 
-      {/* Approve Modal */}
-      <Modal
-        isOpen={isApproveModalOpen}
-        onClose={() => setIsApproveModalOpen(false)}
-        className="max-w-[400px] m-4"
-      >
+      {/* Disburse Modal */}
+      <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[400px] m-4">
         <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
           <div className="px-2 pr-14">
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-              Enter Disbursed Amount
+              Enter Mpesa Code
             </h4>
           </div>
           <form
             className="flex flex-col"
-            onSubmit={(e) => handleApproveSave(e)}
+            onSubmit={(e) => handleDisburseSave(e)}
           >
             <div className="custom-scrollbar h-[200px] overflow-y-auto px-2 pb-3">
               <div className="mt-7">
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-1">
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Disbursed Amount</Label>
-                    <Input
-                      type="number"
-                      value={disbursedAmount || ""}
-                      onChange={(e) =>
-                        setDisbursedAmount(parseFloat(e.target.value))
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-              <Button size="sm" type="submit">
-                Save Changes
-              </Button>
-            </div>
-          </form>
-        </div>
-      </Modal>
-
-      {/* Reject Modal */}
-      <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[400px] m-4">
-        <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
-          <div className="px-2 pr-14">
-            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-              Reason
-            </h4>
-          </div>
-          <form className="flex flex-col" onSubmit={(e) => handleRejectSave(e)}>
-            <div className="custom-scrollbar h-[200px] overflow-y-auto px-2 pb-3">
-              <div className="mt-7">
-                <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-1">
-                  <div className="col-span-2 lg:col-span-1">
-                    <Label>Reason</Label>
+                    <Label>Mpesa Code</Label>
                     <Input
                       type="text"
-                      value={reason}
-                      onChange={(e) => setReason(e.target.value)}
+                      value={mpesaCode}
+                      onChange={(e) => setMpesaCode(e.target.value)}
                     />
                   </div>
                 </div>
@@ -322,5 +238,5 @@ const PendingLoans = () => {
   );
 };
 
-const AuthenticatedPendingLoans = withAuth(PendingLoans);
-export default AuthenticatedPendingLoans;
+const AuthenticatedPendingDisbursement = withAuth(PendingDisbursement);
+export { AuthenticatedPendingDisbursement as PendingDisbursement };

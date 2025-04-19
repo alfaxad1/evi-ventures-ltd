@@ -43,6 +43,11 @@ const navItems: NavItem[] = [
       { name: "Active Loans", path: "/loans", pro: false },
       { name: "Fully Paid Loans", path: "/paid-loans", pro: false },
       { name: "Rejected Loans", path: "/rejected-loans", pro: false },
+      {
+        name: "Pending Disbursement",
+        path: "/pending-disbursement",
+        pro: false,
+      },
     ],
   },
 ];

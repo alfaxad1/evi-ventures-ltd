@@ -178,6 +178,86 @@ router.get("/loan-details/paid", async (req, res) => {
   }
 });
 
+//pending disbursement
+router.get("/loan-details/pending-disbursement", async (req, res) => {
+  try {
+    const [loans] = await connection.promise().query(`
+      SELECT 
+        l.id,
+        CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
+        c.national_id,
+        c.phone,
+        lp.name AS loan_product,
+        la.purpose,
+        l.principal,
+        l.total_interest,
+        l.total_amount,
+        l.status,
+        l.due_date,
+        DATEDIFF(l.due_date, CURDATE()) as days_remaining
+      FROM loans l
+      JOIN customers c ON l.customer_id = c.id
+      JOIN loan_applications la ON l.application_id = la.id
+      JOIN loan_products lp ON la.product_id = lp.id
+      WHERE l.status = 'pending_disbursement'
+      ORDER BY l.id DESC
+    `);
+
+    res.status(200).json(loans);
+  } catch (err) {
+    console.error(
+      "Error fetching loans with pending disbursement status:",
+      err
+    );
+    res
+      .status(500)
+      .json({
+        error: "Failed to retrieve loans with pending disbursement status",
+      });
+  }
+});
+
+//disburse a loan
+router.put("/disburse/:loanId", async (req, res) => {
+  const { mpesaCode } = req.body;
+
+  if (!mpesaCode) {
+    return res.status(400).json({ error: "Mpesa code is required" });
+  }
+
+  try {
+    await connection.promise().beginTransaction();
+
+    // 1. Update loan status to active
+    const [updateResult] = await connection
+      .promise()
+      .query(
+        "UPDATE loans SET status = 'active', disbursement_date = NOW() WHERE id = ? AND status = 'pending_disbursement'",
+        [req.params.loanId]
+      );
+
+    if (updateResult.affectedRows === 0) {
+      await connection.promise().rollback();
+      return res.status(400).json({
+        error: "Loan not found or not in pending disbursement status",
+      });
+    }
+
+    // 2. Save transaction in mpesa_transactions table
+    await connection.promise().query(
+      `INSERT INTO mpesa_transactions (loan_id, mpesa_code, transaction_date) 
+       VALUES (?, ?, NOW())`,
+      [req.params.loanId, mpesaCode]
+    );
+
+    await connection.promise().commit();
+    res.status(200).json({ message: "Loan disbursed successfully" });
+  } catch (err) {
+    await connection.promise().rollback();
+    console.error("Error disbursing loan:", err);
+    res.status(500).json({ error: "Failed to disburse loan" });
+  }
+});
 // Get loan by ID with full details
 router.get("/:id", async (req, res) => {
   try {
