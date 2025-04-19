@@ -120,7 +120,6 @@ router.get("/loan-details", async (req, res) => {
         l.total_amount,
         l.status,
         (SELECT SUM(amount) FROM repayments WHERE loan_id = l.id AND status = 'paid') as paid_amount,
-        -- Use remaining_balance if not NULL, otherwise calculate it dynamically
         IFNULL(
           l.remaining_balance, 
           (l.total_amount - IFNULL((SELECT SUM(amount) FROM repayments WHERE loan_id = l.id AND status = 'paid'), 0))
@@ -130,6 +129,7 @@ router.get("/loan-details", async (req, res) => {
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_applications la ON l.application_id = la.id
       JOIN loan_products lp ON la.product_id = lp.id
+      WHERE l.status IN ('active', 'partially_paid') -- Filter by status
       ORDER BY l.disbursement_date DESC
     `);
 
@@ -137,6 +137,44 @@ router.get("/loan-details", async (req, res) => {
   } catch (err) {
     console.error("Error fetching loan details:", err);
     res.status(500).json({ error: "Failed to retrieve loan details" });
+  }
+});
+
+//with status paid
+router.get("/loan-details/paid", async (req, res) => {
+  try {
+    const [loans] = await connection.promise().query(`
+      SELECT 
+        l.id,
+        CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
+        c.national_id,
+        c.phone,
+        lp.name AS loan_product,
+        la.purpose,
+        l.disbursement_date,
+        l.due_date,
+        l.principal,
+        l.total_interest,
+        l.total_amount,
+        l.status,
+        (SELECT SUM(amount) FROM repayments WHERE loan_id = l.id AND status = 'paid') as paid_amount,
+        IFNULL(
+          l.remaining_balance, 
+          (l.total_amount - IFNULL((SELECT SUM(amount) FROM repayments WHERE loan_id = l.id AND status = 'paid'), 0))
+        ) as remaining_balance,
+        DATEDIFF(l.due_date, CURDATE()) as days_remaining
+      FROM loans l
+      JOIN customers c ON l.customer_id = c.id
+      JOIN loan_applications la ON l.application_id = la.id
+      JOIN loan_products lp ON la.product_id = lp.id
+      WHERE l.status = 'paid' -- Filter by status
+      ORDER BY l.disbursement_date DESC
+    `);
+
+    res.status(200).json(loans);
+  } catch (err) {
+    console.error("Error fetching paid loan details:", err);
+    res.status(500).json({ error: "Failed to retrieve paid loan details" });
   }
 });
 

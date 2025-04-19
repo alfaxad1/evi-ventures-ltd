@@ -27,6 +27,7 @@ import AuthenticatedApprovedRepayments from "./pages/DataPages/ApprovedRepayment
 import { LoanProducts } from "./pages/DataPages/LoanProducts";
 import { AddLoanProduct } from "./pages/DataPages/AddLoanProduct";
 import CustomerNew from "./pages/DataPages/CustomerNew";
+import { PaidLoans } from "./pages/DataPages/PaidLoans";
 
 export default function App() {
   return (
@@ -73,6 +74,7 @@ export default function App() {
             <Route path="/add-product" element={<AddLoanProduct />} />
             <Route path="/loan-products" element={<LoanProducts />} />
             <Route path="/customer-new" element={<CustomerNew />} />
+            <Route path="/paid-loans" element={<PaidLoans />} />
           </Route>
 
           {/* Auth Layout */}

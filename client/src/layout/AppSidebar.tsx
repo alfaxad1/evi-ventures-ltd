@@ -40,7 +40,8 @@ const navItems: NavItem[] = [
 
     subItems: [
       { name: "Pending Loans", path: "/pending-loans", pro: false },
-      { name: "Approved Loans", path: "/loans", pro: false },
+      { name: "Active Loans", path: "/loans", pro: false },
+      { name: "Fully Paid Loans", path: "/paid-loans", pro: false },
       { name: "Rejected Loans", path: "/rejected-loans", pro: false },
     ],
   },
