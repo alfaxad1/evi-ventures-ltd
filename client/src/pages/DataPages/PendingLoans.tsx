@@ -203,6 +203,7 @@ const PendingLoans = () => {
               ))}
             </TableBody>
           </Table>
+          
         </div>
       </div>
     </div>

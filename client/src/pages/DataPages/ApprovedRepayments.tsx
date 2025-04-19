@@ -105,10 +105,14 @@ const ApprovedRepayments = () => {
                           color:
                             repayment.loan_status === "active"
                               ? "green"
-                              : "red",
+                              : repayment.loan_status === "partially_paid"
+                              ? "blue-500"
+                              : "orange",
                         }}
                       >
-                        {repayment.loan_status}
+                        {repayment.loan_status === "partially_paid"
+                          ? "partially paid"
+                          : repayment.loan_status}
                       </span>
                     </TableCell>
                   </TableRow>

@@ -83,8 +83,8 @@ const LoanApplication = () => {
       purpose: "",
       comments: "",
       productId: 0,
-      customerId: 0,  
-      officerId: 0
+      customerId: 0,
+      officerId: 0,
     });
   };
 
@@ -132,6 +132,7 @@ const LoanApplication = () => {
             <div>
               <Label htmlFor="purpose">Purpose</Label>
               <Input
+                value={formData.purpose}
                 type="text"
                 placeholder="Purpose"
                 name="purpose"
@@ -145,6 +146,7 @@ const LoanApplication = () => {
                 placeholder="Enter some comments"
                 name="comments"
                 onChange={(e) => handleChange(e)}
+                value={formData.comments}
               />
             </div>
           </div>

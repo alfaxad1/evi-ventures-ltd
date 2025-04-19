@@ -132,7 +132,7 @@ const PaidLoans = () => {
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       <span
                         style={{
-                          color: loan.status === "active" ? "green" : "red",
+                          color: "green",
                         }}
                       >
                         {loan.status}
