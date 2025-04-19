@@ -26,6 +26,7 @@ interface Loan {
   remaining_balance: number;
   status: string;
   due_date: string;
+  days_remaining: number;
 }
 const Loans = () => {
   const { isOpen, openModal, closeModal } = useModal();
@@ -159,6 +160,12 @@ const Loans = () => {
                     isHeader
                     className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                   >
+                    Days Remaining
+                  </TableCell>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  >
                     Actions
                   </TableCell>
                 </TableRow>
@@ -203,6 +210,10 @@ const Loans = () => {
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.due_date.split(" ")[0]}
                     </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      {loan.days_remaining}
+                    </TableCell>
+
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       <button
                         onClick={() => handleRepay(loan.id, loan.due_date)}

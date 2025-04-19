@@ -129,7 +129,7 @@ router.get("/loan-details", async (req, res) => {
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_applications la ON l.application_id = la.id
       JOIN loan_products lp ON la.product_id = lp.id
-      WHERE l.status IN ('active', 'partially_paid') -- Filter by status
+      WHERE l.status IN ('active', 'partially_paid') 
       ORDER BY l.disbursement_date DESC
     `);
 
@@ -209,11 +209,9 @@ router.get("/loan-details/pending-disbursement", async (req, res) => {
       "Error fetching loans with pending disbursement status:",
       err
     );
-    res
-      .status(500)
-      .json({
-        error: "Failed to retrieve loans with pending disbursement status",
-      });
+    res.status(500).json({
+      error: "Failed to retrieve loans with pending disbursement status",
+    });
   }
 });
 
@@ -228,7 +226,28 @@ router.put("/disburse/:loanId", async (req, res) => {
   try {
     await connection.promise().beginTransaction();
 
-    // 1. Update loan status to active
+    // 1. Fetch the customer_id and total_amount associated with the loan
+    const [loan] = await connection
+      .promise()
+      .query(
+        "SELECT customer_id, total_amount, officer_id FROM loans WHERE id = ? AND status = 'pending_disbursement'",
+        [req.params.loanId]
+      );
+
+    if (loan.length === 0) {
+      await connection.promise().rollback();
+      return res.status(400).json({
+        error: "Loan not found or not in pending disbursement status",
+      });
+    }
+
+    const {
+      customer_id: customerId,
+      total_amount: amount,
+      officer_id: initiatedBy,
+    } = loan[0];
+
+    // 2. Update loan status to active
     const [updateResult] = await connection
       .promise()
       .query(
@@ -239,15 +258,15 @@ router.put("/disburse/:loanId", async (req, res) => {
     if (updateResult.affectedRows === 0) {
       await connection.promise().rollback();
       return res.status(400).json({
-        error: "Loan not found or not in pending disbursement status",
+        error: "Failed to update loan status",
       });
     }
 
-    // 2. Save transaction in mpesa_transactions table
+    // 3. Save transaction in mpesa_transactions table
     await connection.promise().query(
-      `INSERT INTO mpesa_transactions (loan_id, mpesa_code, transaction_date) 
-       VALUES (?, ?, NOW())`,
-      [req.params.loanId, mpesaCode]
+      `INSERT INTO mpesa_transactions (loan_id, customer_id, amount, type, mpesa_code, status, initiated_by, created_at) 
+       VALUES (?, ?, ?, 'disbursement', ?, 'completed', ?, NOW())`,
+      [req.params.loanId, customerId, amount, mpesaCode, initiatedBy]
     );
 
     await connection.promise().commit();

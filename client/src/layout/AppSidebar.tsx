@@ -39,15 +39,15 @@ const navItems: NavItem[] = [
     name: "Loans",
 
     subItems: [
-      { name: "Pending Loans", path: "/pending-loans", pro: false },
-      { name: "Active Loans", path: "/loans", pro: false },
-      { name: "Fully Paid Loans", path: "/paid-loans", pro: false },
-      { name: "Rejected Loans", path: "/rejected-loans", pro: false },
+      { name: "Pending Approval", path: "/pending-loans", pro: false },
       {
         name: "Pending Disbursement",
         path: "/pending-disbursement",
         pro: false,
       },
+      { name: "Rejected Loans", path: "/rejected-loans", pro: false },
+      { name: "Active Loans", path: "/loans", pro: false },
+      { name: "Cleared Loans", path: "/paid-loans", pro: false },
     ],
   },
 ];
@@ -66,7 +66,7 @@ const othersItems: NavItem[] = [
     icon: <Banknote />,
     name: "Loan Products",
     subItems: [
-      { name: "Add a Product", path: "/add-product", pro: false },
+      { name: "Add Product", path: "/add-product", pro: false },
       { name: "All Products", path: "/loan-products", pro: false },
     ],
   },
