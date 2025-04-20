@@ -22,12 +22,12 @@ export const calculateRemainingBalance = async (loanId, connection) => {
 // function to detect defaults
 export const checkLoanDefaults = async (connection) => {
   try {
-    // Find loans that are 90+ days overdue
+    // Find loans that are 30+ days overdue
     const [overdueLoans] = await connection.promise().query(`
         SELECT l.id 
         FROM loans l
         WHERE l.status IN ('active', 'partially_paid')
-        AND l.due_date < DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
+        AND l.due_date < DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
         AND NOT EXISTS (
           SELECT 1 FROM loan_defaults 
           WHERE loan_id = l.id
@@ -103,7 +103,8 @@ export const updateLoanStatus = async (loanId, connection) => {
   // Check for overdue status
   const isOverdue = new Date(due_date) < new Date();
   if (isOverdue && newStatus !== "paid") {
-    updateFields.overdue_since = due_date;
+    newStatus = "overdue";
+    //updateFields.overdue_since = due_date;
   }
 
   // Add newStatus to updateFields

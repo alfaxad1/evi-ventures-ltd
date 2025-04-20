@@ -471,6 +471,153 @@ router.put("/:id", validateLoanData, async (req, res) => {
   }
 });
 
+//loans due today
+router.get("/loan-details/due-today", async (req, res) => {
+  try {
+    const [loans] = await connection.promise().query(`
+      SELECT 
+        l.id,
+        CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
+        c.national_id,
+        c.phone,
+        lp.name AS loan_product,
+        l.principal,
+        l.total_interest,
+        l.total_amount,
+        l.due_date,
+        DATEDIFF(l.due_date, CURDATE()) as days_remaining
+      FROM loans l
+      JOIN customers c ON l.customer_id = c.id
+      JOIN loan_products lp ON l.product_id = lp.id
+      WHERE l.due_date = CURDATE() AND l.status IN ('active', 'partially_paid')
+      ORDER BY l.due_date ASC
+    `);
+
+    res.status(200).json(loans);
+  } catch (err) {
+    console.error("Error fetching loans due today:", err);
+    res.status(500).json({ error: "Failed to retrieve loans due today" });
+  }
+});
+
+//loans due tommorrow
+router.get("/loan-details/due-tomorrow", async (req, res) => {
+  try {
+    const [loans] = await connection.promise().query(`
+      SELECT 
+        l.id,
+        CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
+        c.national_id,
+        c.phone,
+        lp.name AS loan_product,
+        l.principal,
+        l.total_interest,
+        l.total_amount,
+        l.due_date,
+        DATEDIFF(l.due_date, CURDATE()) as days_remaining
+      FROM loans l
+      JOIN customers c ON l.customer_id = c.id
+      JOIN loan_products lp ON l.product_id = lp.id
+      WHERE l.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY) AND l.status IN ('active', 'partially_paid')
+      ORDER BY l.due_date ASC
+    `);
+
+    res.status(200).json(loans);
+  } catch (err) {
+    console.error("Error fetching loans due tomorrow:", err);
+    res.status(500).json({ error: "Failed to retrieve loans due tomorrow" });
+  }
+});
+//loans due 2-7 days
+router.get("/loan-details/due-2-7-days", async (req, res) => {
+  try {
+    const [loans] = await connection.promise().query(`
+      SELECT 
+        l.id,
+        CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
+        c.national_id,
+        c.phone,
+        lp.name AS loan_product,
+        l.principal,
+        l.total_interest,
+        l.total_amount,
+        l.due_date,
+        DATEDIFF(l.due_date, CURDATE()) as days_remaining
+      FROM loans l
+      JOIN customers c ON l.customer_id = c.id
+      JOIN loan_products lp ON l.product_id = lp.id
+      WHERE l.due_date BETWEEN DATE_ADD(CURDATE(), INTERVAL 2 DAY) AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+        AND l.status IN ('active', 'partially_paid')
+      ORDER BY l.due_date ASC
+    `);
+
+    res.status(200).json(loans);
+  } catch (err) {
+    console.error("Error fetching loans due in 2-7 days:", err);
+    res.status(500).json({ error: "Failed to retrieve loans due in 2-7 days" });
+  }
+});
+
+//overdue loans
+router.get("/loan-details/overdue", async (req, res) => {
+  try {
+    const [loans] = await connection.promise().query(`
+      SELECT 
+        l.id,
+        CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
+        c.national_id,
+        c.phone,
+        lp.name AS loan_product,
+        l.principal,
+        l.total_interest,
+        l.total_amount,
+        l.due_date,
+        DATEDIFF(CURDATE(), l.due_date) as days_overdue
+      FROM loans l
+      JOIN customers c ON l.customer_id = c.id
+      JOIN loan_products lp ON l.product_id = lp.id
+      WHERE l.due_date < CURDATE() 
+        AND l.status IN ('active', 'partially_paid')
+      ORDER BY l.due_date ASC
+    `);
+
+    res.status(200).json(loans);
+  } catch (err) {
+    console.error("Error fetching overdue loans:", err);
+    res.status(500).json({ error: "Failed to retrieve overdue loans" });
+  }
+});
+
+//defaulted loans
+router.get("/loan-details/defaulted", async (req, res) => {
+  try {
+    const [loans] = await connection.promise().query(`
+      SELECT 
+        l.id,
+        CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
+        c.national_id,
+        c.phone,
+        lp.name AS loan_product,
+        l.principal,
+        l.total_interest,
+        l.total_amount,
+        l.due_date,
+        l.default_date,
+        DATEDIFF(CURDATE(), l.due_date) as days_overdue
+      FROM loans l
+      JOIN customers c ON l.customer_id = c.id
+      JOIN loan_products lp ON l.product_id = lp.id
+      WHERE l.status = 'defaulted'
+      ORDER BY l.default_date ASC
+    `);
+
+    res.status(200).json(loans);
+  } catch (err) {
+    console.error("Error fetching defaulted loans:", err);
+    res.status(500).json({ error: "Failed to retrieve defaulted loans" });
+  }
+});
+
 // Delete a loan (with validation)
 router.delete("/:id", async (req, res) => {
   try {
