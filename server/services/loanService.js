@@ -50,7 +50,7 @@ export const checkLoanDefaults = async (connection) => {
       await connection.promise().query(
         `
           INSERT INTO loan_defaults (loan_id, default_date, reason)
-          VALUES (?, CURRENT_DATE(), '90 days overdue')
+          VALUES (?, CURRENT_DATE(), '30 days overdue')
         `,
         [loan.id]
       );
