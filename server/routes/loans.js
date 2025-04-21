@@ -1,6 +1,7 @@
 import express from "express";
 import connection from "../config/dbConnection.js";
 import { body, validationResult } from "express-validator";
+import { authorizeRoles } from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
 router.use(express.json());
@@ -369,6 +370,7 @@ router.post("/", validateLoanData, async (req, res) => {
     if (officer.length === 0) {
       return res.status(404).json({ error: "Loan officer not found" });
     }
+    console.log("Loan officer:", officerId);
 
     // Create loan record
     const [result] = await connection.promise().query(

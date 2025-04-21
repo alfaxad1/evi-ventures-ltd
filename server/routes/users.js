@@ -109,24 +109,15 @@ router.post("/login", (req, res) => {
         if (err)
           return res.status(500).json({ error: "error comparing password" });
         if (response) {
-          const id = result[0].id;
           const name = result[0].first_name + " " + result[0].last_name;
           const email = result[0].email;
+          const id = result[0].id;
           const role = result[0].role;
-          const token = jwt.sign({ id: result[0].id }, process.env.JWT_SECRET, {
+          const token = jwt.sign({ id, role }, process.env.JWT_SECRET, {
             expiresIn: "1h",
           });
 
-          // Update the last_login field
-          const updateSql = "UPDATE users SET last_login = NOW() WHERE id = ?";
-          connection.query(updateSql, [id], (updateErr) => {
-            if (updateErr)
-              return res
-                .status(500)
-                .json({ error: "error updating last login timestamp" });
-
-            res.status(200).json({ token, role, name, email, id });
-          });
+          res.status(200).json({ token, role });
         } else {
           res.status(401).json({ error: "Invalid email or password" });
         }

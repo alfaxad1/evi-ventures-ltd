@@ -1,6 +1,7 @@
 import express from "express";
 import connection from "../config/dbConnection.js";
 import { body, validationResult } from "express-validator";
+import { authorizeRoles } from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
 router.use(express.json());
@@ -9,7 +10,7 @@ router.use(express.json());
 const validateLoanApplication = [
   body("customerId").isInt().withMessage("Valid customer ID required"),
   body("productId").isInt().withMessage("Valid product ID required"),
-  body("officerId").isInt().withMessage("Valid officer ID required"),
+  //body("officerId").isInt().withMessage("Valid officer ID required"),
   body("amount")
     .isFloat({ min: 1000 })
     .withMessage("Amount must be at least 1000"),
@@ -224,15 +225,13 @@ router.get("/:id", async (req, res) => {
 });
 
 // Approve a loan application
-router.put("/approve/:id", async (req, res) => {
+router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
   const { disbursedAmount } = req.body; // Get the disbursed amount from the request body
 
   if (!disbursedAmount || disbursedAmount <= 0) {
-    return res
-      .status(400)
-      .json({
-        error: "Disbursed amount is required and must be greater than 0",
-      });
+    return res.status(400).json({
+      error: "Disbursed amount is required and must be greater than 0",
+    });
   }
 
   try {
@@ -336,20 +335,22 @@ router.post("/", validateLoanApplication, async (req, res) => {
     const {
       customerId,
       productId,
-      officerId,
       amount,
       purpose,
       status = "pending",
       comments,
     } = req.body;
 
-    // Verify customer exists
+    // Verify customer exists and get the officerId from created_by
     const [customer] = await connection
       .promise()
-      .query("SELECT id FROM customers WHERE id = ?", [customerId]);
+      .query("SELECT id, created_by AS officerId FROM customers WHERE id = ?", [
+        customerId,
+      ]);
     if (customer.length === 0) {
       return res.status(404).json({ error: "Customer not found" });
     }
+    const officerId = customer[0].officerId;
 
     // Verify product exists
     const [product] = await connection
@@ -366,13 +367,12 @@ router.post("/", validateLoanApplication, async (req, res) => {
     // Verify officer exists
     const [officer] = await connection
       .promise()
-      .query("SELECT id FROM users WHERE id = ? AND role = 'officer'", [
-        officerId,
-      ]);
+      .query("SELECT id FROM users WHERE id = ?", [officerId]);
     if (officer.length === 0) {
       return res.status(404).json({ error: "Loan officer not found" });
     }
 
+    // Insert loan application
     const [result] = await connection.promise().query(
       `INSERT INTO loan_applications 
       (customer_id, product_id, officer_id, amount, purpose, status, comments)

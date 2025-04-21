@@ -14,7 +14,7 @@ interface LoanApplicationData {
   purpose: string;
   comments: string;
   customerId: number;
-  officerId: number;
+  //officerId: number;
 }
 
 const LoanApplication = () => {
@@ -24,7 +24,7 @@ const LoanApplication = () => {
     comments: "",
     productId: 0,
     customerId: 0,
-    officerId: 0,
+    //officerId: 0,
   });
   const [options, setOptions] = useState<{ value: string; label: string }[]>(
     []
@@ -71,7 +71,7 @@ const LoanApplication = () => {
     setFormData((prevFormData) => ({
       ...prevFormData,
       customerId: customerId ? parseInt(customerId) : 0,
-      officerId: userId ? parseInt(userId) : 0,
+      //officerId: userId ? parseInt(userId) : 0,
     }));
   }, [customerId, userId]);
 
@@ -84,7 +84,7 @@ const LoanApplication = () => {
       comments: "",
       productId: 0,
       customerId: 0,
-      officerId: 0,
+      //officerId: 0,
     });
   };
 

@@ -13,6 +13,7 @@ import { Modal } from "../../components/ui/modal";
 import { useModal } from "../../hooks/useModal";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
+import { toast, ToastContainer } from "react-toastify";
 
 interface pendingLoan {
   id: number;
@@ -68,17 +69,42 @@ const PendingLoans = () => {
     }
 
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("You are not authorized ");
+        return;
+      }
       await axios.put(
         `http://localhost:8000/api/loansApplication/approve/${selectedApplicationId}`,
-        { disbursedAmount }
+        { disbursedAmount },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       console.log("Loan approved successfully");
-      fetchPendingLoans(); // Refresh the list after approval
-      setIsApproveModalOpen(false); // Close the modal
-      setDisbursedAmount(null); // Clear the disbursed amount
-      setSelectedApplicationId(null); // Clear the selected application ID
-    } catch (error) {
-      console.error("Error approving loan:", error);
+      fetchPendingLoans();
+      setIsApproveModalOpen(false);
+      setDisbursedAmount(null);
+      setSelectedApplicationId(null);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        setIsApproveModalOpen(false);
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
+          toast.error("You are not authorized to approve this loan.");
+        } else {
+          toast.error("An unexpected error occurred. Please try again.");
+        }
+        console.error("Error approving loan:", error);
+      } else {
+        console.error("Unexpected error:", error);
+        toast.error("An unexpected error occurred. Please try again.");
+      }
     }
   };
 
@@ -108,6 +134,7 @@ const PendingLoans = () => {
 
   return (
     <>
+      <ToastContainer position="bottom-right" />
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
         <div className="max-w-full overflow-x-auto">
           <div className="min-w-[1102px]">
