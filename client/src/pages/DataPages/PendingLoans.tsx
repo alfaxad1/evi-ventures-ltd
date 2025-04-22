@@ -134,11 +134,27 @@ const PendingLoans = () => {
       );
       console.log("Loan rejected successfully");
       fetchPendingLoans();
+      setIsApproveModalOpen(false);
       closeModal();
       setReason("");
       setSelectedApplicationId(null);
-    } catch (error) {
-      console.error("Error rejecting loan:", error);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        setIsApproveModalOpen(false);
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
+          toast.error("You are not authorized to approve this loan.");
+        } else {
+          toast.error("An unexpected error occurred. Please try again.");
+        }
+        console.error("Error approving loan:", error);
+      } else {
+        console.error("Unexpected error:", error);
+        toast.error("An unexpected error occurred. Please try again.");
+      }
     }
   };
 

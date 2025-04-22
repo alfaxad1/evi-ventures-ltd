@@ -217,7 +217,7 @@ router.get("/loan-details/pending-disbursement", async (req, res) => {
 });
 
 //disburse a loan
-router.put("/disburse/:loanId", async (req, res) => {
+router.put("/disburse/:loanId", authorizeRoles(["admin"]), async (req, res) => {
   const { mpesaCode } = req.body;
 
   if (!mpesaCode) {

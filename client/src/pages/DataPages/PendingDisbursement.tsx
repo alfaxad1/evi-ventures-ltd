@@ -13,6 +13,7 @@ import { Modal } from "../../components/ui/modal";
 import { useModal } from "../../hooks/useModal";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
+import { toast, ToastContainer } from "react-toastify";
 
 interface pendingDisbursementLoan {
   id: number;
@@ -67,22 +68,48 @@ const PendingDisbursement = () => {
     }
 
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("You are not authorized ");
+        return;
+      }
       await axios.put(
         `http://localhost:8000/api/loans/disburse/${selectedLoanId}`,
-        { mpesaCode }
+        { mpesaCode },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       console.log("Loan disbursed successfully");
       fetchPendingDisbursementLoans(); // Refresh the list after disbursement
       closeModal(); // Close the modal
       setMpesaCode(""); // Clear the Mpesa code input
       setSelectedLoanId(null); // Clear the selected loan ID
-    } catch (error) {
-      console.error("Error disbursing loan:", error);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        closeModal();
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
+          toast.error("You are not authorized.");
+        } else {
+          toast.error("An unexpected error occurred. Please try again.");
+        }
+        console.error("Error approving loan:", error);
+      } else {
+        console.error("Unexpected error:", error);
+        toast.error("An unexpected error occurred. Please try again.");
+      }
     }
   };
 
   return (
     <>
+      <ToastContainer position="bottom-right" />
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
         <div className="max-w-full overflow-x-auto">
           <div className="min-w-[1102px]">
@@ -185,12 +212,12 @@ const PendingDisbursement = () => {
                       {loan.days_remaining}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      <Button
+                      <button
                         onClick={() => handleDisburseClick(loan.id)}
-                        className="bg-success-500 text-white text-sm py-1 rounded-md"
+                        className="bg-success-500 text-white text-sm  py-1 rounded-md mb-2 w-16"
                       >
                         Disburse
-                      </Button>
+                      </button>
                     </TableCell>
                   </TableRow>
                 ))}
