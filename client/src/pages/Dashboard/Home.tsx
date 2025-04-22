@@ -74,7 +74,7 @@ const Home = () => {
   return (
     <>
       <PageMeta title="Evi Ventures Ltd" description="This is Evi" />
-      <div className="grid  gap-4 md:gap-6">
+      <div className="grid gap-4 md:gap-6">
         <div className="col-span-12 space-y-6 xl:col-span-7">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6">
             {/* <!-- Metric Item Start --> */}

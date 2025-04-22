@@ -106,7 +106,7 @@ const LoanApplication = () => {
   return (
     <>
       <ToastContainer position="bottom-right" />
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <form onSubmit={(e) => save(e)}>
           <div className="space-y-6">
             <div>

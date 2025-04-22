@@ -118,9 +118,19 @@ const PendingLoans = () => {
     if (!selectedApplicationId) return; // Ensure an application ID is selected
 
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("You are not authorized ");
+        return;
+      }
       await axios.put(
         `http://localhost:8000/api/loansApplication/reject/${selectedApplicationId}`,
-        { reason: reason }
+        { reason: reason },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       console.log("Loan rejected successfully");
       fetchPendingLoans();

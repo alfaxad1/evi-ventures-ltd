@@ -117,7 +117,7 @@ router.post("/login", (req, res) => {
             expiresIn: "1h",
           });
 
-          res.status(200).json({ token, role });
+          res.status(200).json({ token, role, name, email });
         } else {
           res.status(401).json({ error: "Invalid email or password" });
         }
