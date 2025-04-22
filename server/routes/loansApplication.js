@@ -302,7 +302,7 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
 });
 
 // Reject a loan application
-router.put("/reject/:id", async (req, res) => {
+router.put("/reject/:id", authorizeRoles(["admin"]), async (req, res) => {
   try {
     const [result] = await connection
       .promise()
