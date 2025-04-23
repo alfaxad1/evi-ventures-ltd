@@ -38,23 +38,34 @@ const validateCustomerData = [
 // Get all customers with pagination
 router.get("/", async (req, res) => {
   try {
+    const { role, userId } = req.query; // Get role and userId from query parameters
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
 
+    let query = "SELECT * FROM customers WHERE is_active = TRUE";
+    let queryParams = [];
+
+    // If the user is an officer, filter customers by created_by field
+    if (role === "officer") {
+      query += " AND created_by = ?";
+      queryParams.push(userId);
+    }
+
     // Get total count for pagination metadata
     const [countResult] = await connection
       .promise()
-      .query("SELECT COUNT(*) as total FROM customers WHERE is_active = TRUE");
+      .query(
+        `SELECT COUNT(*) as total FROM (${query}) as filtered`,
+        queryParams
+      );
     const total = countResult[0].total;
 
     // Get paginated customers
-    const [customers] = await connection
-      .promise()
-      .query(
-        "SELECT * FROM customers WHERE is_active = TRUE LIMIT ? OFFSET ?",
-        [limit, offset]
-      );
+    query += " LIMIT ? OFFSET ?";
+    queryParams.push(limit, offset);
+
+    const [customers] = await connection.promise().query(query, queryParams);
 
     res.status(200).json({
       data: customers,

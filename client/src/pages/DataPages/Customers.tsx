@@ -34,13 +34,26 @@ const Customers = () => {
     null
   );
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const role: string = JSON.parse(localStorage.getItem("role") || "''");
+  const userId: string = localStorage.getItem("userId") || "";
 
-  const fetchData = async () => {
+  useEffect(() => {
+    fetchData(role, userId);
+  }, [role, userId]);
+
+  console.log("Role:", role);
+  console.log("User ID:", userId);
+
+  const fetchData = async (
+    role: string,
+    userId: string,
+    page: number = 1,
+    limit: number = 10
+  ): Promise<void> => {
     try {
-      const response = await axios.get("http://localhost:8000/api/customers");
+      const response = await axios.get(
+        `http://localhost:8000/api/customers?role=${role}&userId=${userId}&page=${page}&limit=${limit}`
+      );
       console.log("Data fetched successfully:", response.data);
       setCustomerData(response.data.data);
     } catch (error) {
@@ -84,14 +97,13 @@ const Customers = () => {
         );
         console.log("Customer deleted successfully:", response.data);
         toast.success(response.data.message);
-        fetchData(); // Refresh the data
+        fetchData(role, userId); // Refresh the data
       } catch (err: unknown) {
         if (axios.isAxiosError(err) && err.response) {
           console.error("Error saving:", err.response.data);
           toast.error(
             err.response.data.error || err.response.data.errors?.[0]?.msg
           );
-          
         } else {
           console.error("An unexpected error occurred", err);
         }
