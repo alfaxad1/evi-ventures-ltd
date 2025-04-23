@@ -13,6 +13,7 @@ import Input from "../../components/form/input/InputField";
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../../components/ui/modal";
 import Button from "../../components/ui/button/Button";
+import { toast, ToastContainer } from "react-toastify";
 //import { useNavigate } from "react-router";
 
 interface Loan {
@@ -47,9 +48,9 @@ const Loans = () => {
     }
   };
 
-  const [createdBy, setCreatedBy] = useState<number>(0);
+  //const [createdBy, setCreatedBy] = useState<number>(0);
   const [loanId, setLoanId] = useState<number>(0);
-  const [dueDate, setDueDate] = useState<string>("");
+  //const [dueDate, setDueDate] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
   const [mpesaCode, setMpesaCode] = useState<string>("");
   const [paidDate, setPaidDate] = useState<string>("");
@@ -58,25 +59,25 @@ const Loans = () => {
   useEffect(() => {
     setPaidDate(new Date().toISOString().split("T")[0]);
     setStatus("pending");
-    setCreatedBy(parseInt(localStorage.getItem("userId") || "0"));
+    // setCreatedBy(parseInt(localStorage.getItem("userId") || "0"));
   }, []);
 
   const handleRepay = async (loanId: number, dueDate: string) => {
     console.log("loan ID:", loanId);
     console.log("due date:", dueDate);
     setLoanId(loanId);
-    setDueDate(dueDate);
+    //setDueDate(dueDate);
     openModal();
   };
 
   const repaymentData = {
     loanId,
     amount,
-    dueDate,
+    //dueDate,
     paidDate,
     status,
     mpesaCode,
-    createdBy,
+    //createdBy,
   };
 
   const handleSaveClick = async (e: React.FormEvent) => {
@@ -87,6 +88,7 @@ const Loans = () => {
         repaymentData
       );
       console.log("Data posted successfully:", response.data);
+      toast.success("Repayment saved successfully!");
       fetchLoans();
     } catch (error) {
       console.error("Error posting data:", error);
@@ -95,6 +97,7 @@ const Loans = () => {
   };
   return (
     <>
+      <ToastContainer />
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
         <div className="max-w-full overflow-x-auto">
           <div className="min-w-[1102px]">

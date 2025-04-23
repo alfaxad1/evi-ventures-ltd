@@ -121,13 +121,27 @@ router.get("/:id", async (req, res) => {
 
 // Create a new repayment with loan status updates
 router.post("/", validateRepaymentData, async (req, res) => {
-  const { loanId, amount, dueDate, paidDate, status, mpesaCode, createdBy } =
-    req.body;
+  const { loanId, amount, status, mpesaCode, paidDate } = req.body;
 
   try {
     await connection.promise().beginTransaction();
 
-    // 1. Create the repayment record
+    // 1. Retrieve due_date and officer_id from loans table
+    const loanQuery = `
+      SELECT due_date, officer_id 
+      FROM loans 
+      WHERE id = ?
+    `;
+    const [loanResult] = await connection.promise().query(loanQuery, [loanId]);
+
+    if (loanResult.length === 0) {
+      await connection.promise().rollback();
+      return res.status(404).json({ error: "Loan not found" });
+    }
+
+    const { due_date: dueDate, officer_id: createdBy } = loanResult[0];
+
+    // 2. Create the repayment record
     const createSql = `
       INSERT INTO repayments 
         (loan_id, amount, due_date, paid_date, status, mpesa_code, created_by) 
@@ -138,14 +152,14 @@ router.post("/", validateRepaymentData, async (req, res) => {
       .query(createSql, [
         loanId,
         amount,
-        dueDate, 
+        dueDate,
         paidDate,
         status,
         mpesaCode,
         createdBy,
       ]);
 
-    // 2. Update loan status and balance if payment is made
+    // 3. Update loan status and balance if payment is made
     if (status === "paid") {
       // Record M-Pesa transaction if applicable
       if (mpesaCode) {
