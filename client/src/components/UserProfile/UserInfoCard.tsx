@@ -81,7 +81,7 @@ export default function UserInfoCard() {
                     Last Login
                   </p>
                   <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                    {user.last_login.split("T")[0]}
+                    {/* {user.last_login.split("T")[0]} */}
                   </p>
                 </div>
 

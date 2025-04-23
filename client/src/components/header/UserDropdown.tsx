@@ -18,7 +18,7 @@ const fetchUser = async (
     const user = response.data[0];
     setName(user.first_name.concat(" ", user.last_name));
     setEmail(user.email);
-    setAvatar(user.avatar || "/images/user/default.jpeg"); // Use default avatar if none is provided
+    setAvatar(user.avatar || "/images/user/defelaut.jpeg"); // Use default avatar if none is provided
   } catch (error) {
     console.error("Error fetching user data:", error);
   }
@@ -38,7 +38,7 @@ export default function UserDropdown() {
   const userId = localStorage.getItem("userId");
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-  const [avatar, setAvatar] = useState<string>("/images/user/default.jpeg"); // Default avatar
+  const [avatar, setAvatar] = useState<string>("/images/user/defelaut.jpeg"); // Default avatar
 
   useEffect(() => {
     fetchUser(userId, setName, setEmail, setAvatar);
