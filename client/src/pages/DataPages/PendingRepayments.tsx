@@ -30,10 +30,16 @@ const PendingRepayments = () => {
     pendingRepayment[]
   >([]);
 
-  const fetchPendingRepayments = async () => {
+  const role = JSON.parse(localStorage.getItem("role") || "''");
+  const officerId = localStorage.getItem("userId") || "";
+
+  const fetchPendingRepayments = async (
+    role: string,
+    officerId: string
+  ): Promise<void> => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/repayments/pending"
+        `http://localhost:8000/api/repayments/pending?role=${role}&officerId=${officerId}`
       );
       console.log("Pending repayments fetched successfully:", response.data);
 
@@ -43,8 +49,8 @@ const PendingRepayments = () => {
     }
   };
   useEffect(() => {
-    fetchPendingRepayments();
-  }, []);
+    fetchPendingRepayments(role, officerId);
+  }, [role, officerId]);
 
   console.log("Pending repayments:", pendingRepayments);
 
@@ -73,7 +79,7 @@ const PendingRepayments = () => {
         approvalData
       );
       console.log("Approved successfully:", response.data);
-      fetchPendingRepayments();
+      fetchPendingRepayments(role, officerId);
       toast.success("Repayment approved successfully!");
     } catch (error) {
       console.error("Error approving repayment:", error);

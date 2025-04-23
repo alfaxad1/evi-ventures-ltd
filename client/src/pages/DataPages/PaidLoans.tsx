@@ -23,10 +23,16 @@ interface Loan {
 
 const PaidLoans = () => {
   const [loansData, setLoansData] = useState<Loan[]>([]);
-  const fetchPaidLoans = async () => {
+  const role = JSON.parse(localStorage.getItem("role") || "''");
+  const officerId = localStorage.getItem("userId") || "";
+
+  const fetchPaidLoans = async (
+    role: string,
+    officerId: string
+  ): Promise<void> => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/loans/loan-details/paid"
+        `http://localhost:8000/api/loans/loan-details/paid?role=${role}&officerId=${officerId}`
       );
       console.log(response.data);
       setLoansData(response.data);
@@ -35,8 +41,8 @@ const PaidLoans = () => {
     }
   };
   useEffect(() => {
-    fetchPaidLoans();
-  }, []);
+    fetchPaidLoans(role, officerId);
+  }, [role, officerId]);
 
   return (
     <>
