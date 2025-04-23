@@ -144,70 +144,60 @@ router.get("/:id", async (req, res) => {
 
 // Create a new repayment with loan status updates
 router.post("/", validateRepaymentData, async (req, res) => {
-  const { loanId, amount, status, mpesaCode, paidDate } = req.body;
+  const { loanId, amount } = req.body;
 
   try {
     await connection.promise().beginTransaction();
 
-    // 1. Retrieve due_date and officer_id from loans table
-    const loanQuery = `
-      SELECT due_date, officer_id 
-      FROM loans 
-      WHERE id = ?
-    `;
-    const [loanResult] = await connection.promise().query(loanQuery, [loanId]);
+    // Get loan details
+    const [loan] = await connection
+      .promise()
+      .query("SELECT * FROM loans WHERE id = ?", [loanId]);
 
-    if (loanResult.length === 0) {
-      await connection.promise().rollback();
+    if (loan.length === 0) {
       return res.status(404).json({ error: "Loan not found" });
     }
 
-    const { due_date: dueDate, officer_id: createdBy } = loanResult[0];
+    const { installment_amount, installment_type, due_date, arrears } = loan[0];
 
-    // 2. Create the repayment record
-    const createSql = `
-      INSERT INTO repayments 
-        (loan_id, amount, due_date, paid_date, status, mpesa_code, created_by) 
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `;
-    const [createResult] = await connection
-      .promise()
-      .query(createSql, [
-        loanId,
-        amount,
-        dueDate,
-        paidDate,
-        status,
-        mpesaCode,
-        createdBy,
-      ]);
+    let newArrears = arrears || 0;
+    let nextDueDate = new Date(due_date);
 
-    // 3. Update loan status and balance if payment is made
-    if (status === "paid") {
-      // Record M-Pesa transaction if applicable
-      if (mpesaCode) {
-        const mpesaSql = `
-          INSERT INTO mpesa_transactions 
-            (loan_id, amount, type, mpesa_code, status, timestamp) 
-          VALUES (?, ?, 'repayment', ?, 'completed', NOW())
-        `;
-        await connection.promise().query(mpesaSql, [loanId, amount, mpesaCode]);
-      }
-
-      // Update loan status and balance
-      await updateLoanStatus(loanId, connection);
+    // Check if payment is sufficient
+    if (amount < installment_amount) {
+      newArrears += installment_amount - amount; // Add shortfall to arrears
+    } else if (amount > installment_amount) {
+      newArrears -= amount - installment_amount; // Reduce arrears if overpaid
     }
 
-    await connection.promise().commit();
+    // Update due date
+    if (installment_type === "daily") {
+      nextDueDate.setDate(nextDueDate.getDate() + 1);
+    } else if (installment_type === "weekly") {
+      nextDueDate.setDate(nextDueDate.getDate() + 7);
+    }
 
-    res.status(201).json({
-      message: "Repayment created successfully",
-      repaymentId: createResult.insertId,
-    });
+    // Update loan record
+    await connection.promise().query(
+      `UPDATE loans 
+      SET arrears = ?, due_date = ? 
+      WHERE id = ?`,
+      [newArrears, nextDueDate, loanId]
+    );
+
+    // Record repayment
+    await connection.promise().query(
+      `INSERT INTO repayments (loan_id, amount, paid_date) 
+      VALUES (?, ?, NOW())`,
+      [loanId, amount]
+    );
+
+    await connection.promise().commit();
+    res.status(200).json({ message: "Repayment recorded successfully" });
   } catch (err) {
     await connection.promise().rollback();
-    console.error("Error creating repayment:", err);
-    res.status(500).json({ error: "Error creating repayment" });
+    console.error("Error recording repayment:", err);
+    res.status(500).json({ error: "Failed to record repayment" });
   }
 });
 

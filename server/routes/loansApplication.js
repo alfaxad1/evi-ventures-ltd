@@ -239,7 +239,7 @@ router.get("/:id", async (req, res) => {
 
 // Approve a loan application
 router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
-  const { disbursedAmount } = req.body; // Get the disbursed amount from the request body
+  const { disbursedAmount } = req.body;
 
   if (!disbursedAmount || disbursedAmount <= 0) {
     return res.status(400).json({
@@ -250,67 +250,59 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
   try {
     await connection.promise().beginTransaction();
 
-    // 1. Update application status to pending_disbursement
-    const [updateResult] = await connection
-      .promise()
-      .query(
-        "UPDATE loan_applications SET status = 'pending_disbursement', approval_date = NOW() WHERE id = ? AND status = 'pending'",
-        [req.params.id]
-      );
-
-    if (updateResult.affectedRows === 0) {
-      await connection.promise().rollback();
-      return res
-        .status(400)
-        .json({ error: "Application not found or already processed" });
-    }
-
-    // 2. Get application details
+    // Get application details
     const [application] = await connection
       .promise()
       .query("SELECT * FROM loan_applications WHERE id = ?", [req.params.id]);
 
-    // 3. Get loan product details
-    const [loanProduct] = await connection
-      .promise()
-      .query("SELECT * FROM loan_products WHERE id = ?", [
-        application[0].product_id,
-      ]);
+    if (application.length === 0) {
+      return res.status(404).json({ error: "Loan application not found" });
+    }
 
-    // 4. Calculate interest and total amount
+    const { installment_type, customer_id, product_id } = application[0];
+
+    // Calculate interest and total amount
     const interestAmount =
-      disbursedAmount * (loanProduct[0].interest_rate / 100);
-    const totalAmount = parseInt(disbursedAmount) + parseInt(interestAmount);
+      disbursedAmount * (application[0].interest_rate / 100);
+    const totalAmount = disbursedAmount + interestAmount;
 
-    // 5. Create loan record with status pending_disbursement
+    // Calculate installment amount and first due date
+    let installmentAmount, firstDueDate;
+    if (installment_type === "daily") {
+      installmentAmount = totalAmount / 30; // Daily installment
+      firstDueDate = new Date();
+      firstDueDate.setDate(firstDueDate.getDate() + 1);
+    } else if (installment_type === "weekly") {
+      installmentAmount = totalAmount / 4; // Weekly installment
+      firstDueDate = new Date();
+      firstDueDate.setDate(firstDueDate.getDate() + 7);
+    }
+
+    // Create loan record
     const [loanResult] = await connection.promise().query(
       `INSERT INTO loans 
-      (application_id, customer_id, product_id, officer_id, 
-       principal, total_interest, total_amount, due_date, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 
-              DATE_ADD(NOW(), INTERVAL ? DAY), 'pending_disbursement')`,
+      (application_id, customer_id, product_id, total_amount, installment_amount, installment_type, due_date, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'active')`,
       [
         req.params.id,
-        application[0].customer_id,
-        application[0].product_id,
-        application[0].officer_id,
-        disbursedAmount,
-        interestAmount,
+        customer_id,
+        product_id,
         totalAmount,
-        loanProduct[0].duration_days,
+        installmentAmount,
+        installment_type,
+        firstDueDate,
       ]
     );
 
     await connection.promise().commit();
     res.status(200).json({
-      message:
-        "Loan application approved and loan created with pending disbursement",
+      message: "Loan approved successfully",
       loanId: loanResult.insertId,
     });
   } catch (err) {
     await connection.promise().rollback();
-    console.error("Error approving loan application:", err);
-    res.status(500).json({ error: "Failed to approve loan application" });
+    console.error("Error approving loan:", err);
+    res.status(500).json({ error: "Failed to approve loan" });
   }
 });
 
@@ -348,49 +340,50 @@ router.post("/", validateLoanApplication, async (req, res) => {
     const {
       customerId,
       productId,
+      officerId = 3,
       amount,
       purpose,
       status = "pending",
       comments,
+      installmentType, // Add installment type
     } = req.body;
 
-    // Verify customer exists and get the officerId from created_by
+    // Verify customer exists
     const [customer] = await connection
       .promise()
-      .query("SELECT id, created_by AS officerId FROM customers WHERE id = ?", [
-        customerId,
-      ]);
+      .query("SELECT id FROM customers WHERE id = ?", [customerId]);
     if (customer.length === 0) {
       return res.status(404).json({ error: "Customer not found" });
     }
-    const officerId = customer[0].officerId;
 
     // Verify product exists
     const [product] = await connection
       .promise()
-      .query("SELECT id FROM loan_products WHERE id = ? AND is_active = TRUE", [
-        productId,
-      ]);
+      .query("SELECT id FROM loan_products WHERE id = ?", [productId]);
     if (product.length === 0) {
-      return res
-        .status(404)
-        .json({ error: "Loan product not found or inactive" });
+      return res.status(404).json({ error: "Loan product not found" });
     }
 
-    // Verify officer exists
-    const [officer] = await connection
-      .promise()
-      .query("SELECT id FROM users WHERE id = ?", [officerId]);
-    if (officer.length === 0) {
-      return res.status(404).json({ error: "Loan officer not found" });
-    }
+    // Calculate expected completion date (30 days from now)
+    const expectedCompletionDate = new Date();
+    expectedCompletionDate.setDate(expectedCompletionDate.getDate() + 30);
 
     // Insert loan application
     const [result] = await connection.promise().query(
       `INSERT INTO loan_applications 
-      (customer_id, product_id, officer_id, amount, purpose, status, comments)
-      VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [customerId, productId, officerId, amount, purpose, status, comments]
+      (customer_id, product_id, officer_id, amount, purpose, status, comments, installment_type, expected_completion_date)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        customerId,
+        productId,
+        officerId,
+        amount,
+        purpose,
+        status,
+        comments,
+        installmentType,
+        expectedCompletionDate,
+      ]
     );
 
     res.status(201).json({

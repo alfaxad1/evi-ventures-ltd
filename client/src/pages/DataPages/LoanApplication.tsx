@@ -14,6 +14,7 @@ interface LoanApplicationData {
   purpose: string;
   comments: string;
   customerId: number;
+  installmentType: string;
   //officerId: number;
 }
 
@@ -24,6 +25,7 @@ const LoanApplication = () => {
     comments: "",
     productId: 0,
     customerId: 0,
+    installmentType: "",
     //officerId: 0,
   });
   const [options, setOptions] = useState<{ value: string; label: string }[]>(
@@ -57,6 +59,14 @@ const LoanApplication = () => {
     });
     console.log("Updated formData:", { ...formData, productId: value });
   };
+
+  const handleInstallmentChange = (value: string) => {
+    setFormData({
+      ...formData,
+      installmentType: value,
+    });
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -84,6 +94,7 @@ const LoanApplication = () => {
       comments: "",
       productId: 0,
       customerId: 0,
+      installmentType: "",
       //officerId: 0,
     });
   };
@@ -110,7 +121,7 @@ const LoanApplication = () => {
         <form onSubmit={(e) => save(e)}>
           <div className="space-y-6">
             <div>
-              <Label htmlFor="first-name">Product</Label>
+              <Label htmlFor="product">Product</Label>
               <Select
                 options={options}
                 onChange={(selectedOption) =>
@@ -127,6 +138,19 @@ const LoanApplication = () => {
                 placeholder="Amount"
                 name="amount"
                 onChange={(e) => handleChange(e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="installmentType">Installment Type</Label>
+              <Select
+                options={[
+                  { value: "daily", label: "Daily" },
+                  { value: "weekly", label: "Weekly" },
+                ]}
+                onChange={(selectedOption) =>
+                  handleInstallmentChange(selectedOption)
+                }
+                placeholder="Select installment type"
               />
             </div>
             <div>
