@@ -144,7 +144,9 @@ router.get("/pending", async (req, res) => {
 //rejected loans
 router.get("/rejected", async (req, res) => {
   try {
-    const [applications] = await connection.promise().query(`
+    const { officerId, role } = req.query; // Get officerId and role from query parameters
+
+    let sql = `
       SELECT 
         la.id AS application_id,  
         la.customer_id,
@@ -176,8 +178,19 @@ router.get("/rejected", async (req, res) => {
       JOIN customers c ON la.customer_id = c.id
       JOIN loan_products lp ON la.product_id = lp.id
       WHERE la.status = 'rejected'
-      ORDER BY la.created_at DESC
-    `);
+    `;
+
+    const queryParams = [];
+
+    // Add filtering for officer role
+    if (role === "officer") {
+      sql += " AND la.officer_id = ?";
+      queryParams.push(officerId);
+    }
+
+    sql += " ORDER BY la.created_at DESC";
+
+    const [applications] = await connection.promise().query(sql, queryParams);
 
     res.status(200).json(applications);
   } catch (err) {

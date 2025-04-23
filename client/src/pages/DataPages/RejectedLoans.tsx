@@ -25,11 +25,16 @@ interface rejectedLoans {
 
 const RejectedLoans = () => {
   const [rejectedLoans, setRejectedLoans] = useState<rejectedLoans[]>([]);
+  const role = JSON.parse(localStorage.getItem("role") || "''");
+  const officerId = localStorage.getItem("userId") || "";
 
-  const fetchRejectedLoans = async () => {
+  const fetchRejectedLoans = async (
+    role: string,
+    officerId: string
+  ): Promise<void> => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/loansApplication/rejected"
+        `http://localhost:8000/api/loansApplication/rejected?role=${role}&officerId=${officerId}`
       );
       console.log("Rejected loans fetched successfully:", response.data);
       setRejectedLoans(response.data);
@@ -38,8 +43,8 @@ const RejectedLoans = () => {
     }
   };
   useEffect(() => {
-    fetchRejectedLoans();
-  }, []);
+    fetchRejectedLoans(role, officerId);
+  }, [role, officerId]);
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
