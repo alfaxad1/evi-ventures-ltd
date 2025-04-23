@@ -106,7 +106,9 @@ router.get("/", async (req, res) => {
 // Get detailed loan information
 router.get("/loan-details", async (req, res) => {
   try {
-    const [loans] = await connection.promise().query(`
+    const { officerId, role } = req.query; // Get officerId and role from query parameters
+
+    let baseQuery = `
       SELECT 
         l.id,
         CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
@@ -130,9 +132,27 @@ router.get("/loan-details", async (req, res) => {
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_applications la ON l.application_id = la.id
       JOIN loan_products lp ON la.product_id = lp.id
-      WHERE l.status IN ('active', 'partially_paid') 
-      ORDER BY l.disbursement_date DESC
-    `);
+    `;
+
+    const whereClauses = [];
+    const queryParams = [];
+
+    // Filter by officer_id if the user is an officer
+    if (role === "officer") {
+      whereClauses.push("l.officer_id = ?");
+      queryParams.push(officerId);
+    }
+
+    // Add status filter for active and partially paid loans
+    whereClauses.push("l.status IN ('active', 'partially_paid')");
+
+    if (whereClauses.length > 0) {
+      baseQuery += ` WHERE ${whereClauses.join(" AND ")}`;
+    }
+
+    baseQuery += " ORDER BY l.disbursement_date DESC";
+
+    const [loans] = await connection.promise().query(baseQuery, queryParams);
 
     res.status(200).json(loans);
   } catch (err) {
@@ -144,7 +164,9 @@ router.get("/loan-details", async (req, res) => {
 //with status paid
 router.get("/loan-details/paid", async (req, res) => {
   try {
-    const [loans] = await connection.promise().query(`
+    const { officerId, role } = req.query;
+
+    let baseQuery = `
       SELECT 
         l.id,
         CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
@@ -168,9 +190,27 @@ router.get("/loan-details/paid", async (req, res) => {
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_applications la ON l.application_id = la.id
       JOIN loan_products lp ON la.product_id = lp.id
-      WHERE l.status = 'paid' -- Filter by status
-      ORDER BY l.disbursement_date DESC
-    `);
+    `;
+
+    const whereClauses = [];
+    const queryParams = [];
+
+    // Filter by officer_id if the user is an officer
+    if (role === "officer") {
+      whereClauses.push("l.officer_id = ?");
+      queryParams.push(officerId);
+    }
+
+    // Add status filter for paid loans
+    whereClauses.push("l.status = 'paid'");
+
+    if (whereClauses.length > 0) {
+      baseQuery += ` WHERE ${whereClauses.join(" AND ")}`;
+    }
+
+    baseQuery += " ORDER BY l.disbursement_date DESC";
+
+    const [loans] = await connection.promise().query(baseQuery, queryParams);
 
     res.status(200).json(loans);
   } catch (err) {
@@ -563,7 +603,9 @@ router.get("/loan-details/due-2-7-days", async (req, res) => {
 //overdue loans
 router.get("/loan-details/overdue", async (req, res) => {
   try {
-    const [loans] = await connection.promise().query(`
+    const { officerId, role } = req.query;
+
+    let baseQuery = `
       SELECT 
         l.id,
         CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
@@ -578,10 +620,28 @@ router.get("/loan-details/overdue", async (req, res) => {
       FROM loans l
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_products lp ON l.product_id = lp.id
-      WHERE l.due_date < CURDATE() 
-        AND l.status IN ('active', 'partially_paid')
-      ORDER BY l.due_date ASC
-    `);
+    `;
+
+    const whereClauses = [];
+    const queryParams = [];
+
+    // Filter by officer_id if the user is an officer
+    if (role === "officer") {
+      whereClauses.push("l.officer_id = ?");
+      queryParams.push(officerId);
+    }
+
+    // Add status filter for overdue loans
+    whereClauses.push("l.due_date < CURDATE()");
+    whereClauses.push("l.status IN ('active', 'partially_paid')");
+
+    if (whereClauses.length > 0) {
+      baseQuery += ` WHERE ${whereClauses.join(" AND ")}`;
+    }
+
+    baseQuery += " ORDER BY l.due_date ASC";
+
+    const [loans] = await connection.promise().query(baseQuery, queryParams);
 
     res.status(200).json(loans);
   } catch (err) {

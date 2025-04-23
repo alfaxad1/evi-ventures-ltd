@@ -31,15 +31,19 @@ interface Loan {
 }
 const Loans = () => {
   const { isOpen, openModal, closeModal } = useModal();
+
+  const role = JSON.parse(localStorage.getItem("role") || "''");
+  const officerId = localStorage.getItem("userId") || "";
+
   useEffect(() => {
-    fetchLoans();
-  }, []);
+    fetchLoans(role, officerId);
+  }, [role, officerId]);
 
   const [loansData, setLoansData] = useState<Loan[]>([]);
-  const fetchLoans = async () => {
+  const fetchLoans = async (role: string, officerId: string): Promise<void> => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/loans/loan-details"
+        `http://localhost:8000/api/loans/loan-details?role=${role}&officerId=${officerId}`
       );
       console.log("Data fetched successfully:", response.data);
       setLoansData(response.data);
@@ -89,7 +93,7 @@ const Loans = () => {
       );
       console.log("Data posted successfully:", response.data);
       toast.success("Repayment saved successfully!");
-      fetchLoans();
+      fetchLoans(role, officerId);
     } catch (error) {
       console.error("Error posting data:", error);
     }
