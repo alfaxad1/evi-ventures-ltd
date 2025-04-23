@@ -22,10 +22,16 @@ const ApprovedRepayments = () => {
   const [approvedRepayments, setApprovedRepayments] = useState<
     ApprovedRepayment[]
   >([]);
-  const fetchApprovedRepayments = async () => {
+
+  const role = JSON.parse(localStorage.getItem("role") || "''");
+  const officerId = localStorage.getItem("userId") || "";
+  const fetchApprovedRepayments = async (
+    role: string,
+    officerId: string
+  ): Promise<void> => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/repayments/approved`
+        `http://localhost:8000/api/repayments/approved?role=${role}&officerId=${officerId}`
       );
       console.log(
         "Approved repayments fetched successfully:",
@@ -38,8 +44,8 @@ const ApprovedRepayments = () => {
   };
 
   useEffect(() => {
-    fetchApprovedRepayments();
-  }, []);
+    fetchApprovedRepayments(role, officerId);
+  }, [role, officerId]);
 
   return (
     <>
@@ -106,7 +112,7 @@ const ApprovedRepayments = () => {
                             repayment.loan_status === "active"
                               ? "green"
                               : repayment.loan_status === "partially_paid"
-                              ? "blue-500"
+                              ? "blue"
                               : "orange",
                         }}
                       >

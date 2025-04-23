@@ -222,7 +222,9 @@ router.get("/loan-details/paid", async (req, res) => {
 //pending disbursement
 router.get("/loan-details/pending-disbursement", async (req, res) => {
   try {
-    const [loans] = await connection.promise().query(`
+    const { officerId, role } = req.query; // Get officerId and role from query parameters
+
+    let sql = `
       SELECT 
         l.id,
         CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
@@ -241,8 +243,19 @@ router.get("/loan-details/pending-disbursement", async (req, res) => {
       JOIN loan_applications la ON l.application_id = la.id
       JOIN loan_products lp ON la.product_id = lp.id
       WHERE l.status = 'pending_disbursement'
-      ORDER BY l.id DESC
-    `);
+    `;
+
+    const queryParams = [];
+
+    // Add filtering for officer role
+    if (role === "officer") {
+      sql += " AND l.officer_id = ?";
+      queryParams.push(officerId);
+    }
+
+    sql += " ORDER BY l.id DESC";
+
+    const [loans] = await connection.promise().query(sql, queryParams);
 
     res.status(200).json(loans);
   } catch (err) {

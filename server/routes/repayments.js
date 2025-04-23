@@ -82,7 +82,9 @@ router.get("/pending", async (req, res) => {
 //approved repayments
 router.get("/approved", async (req, res) => {
   try {
-    const sql = `
+    const { officerId, role } = req.query; // Get officerId and role from query parameters
+
+    let sql = `
       SELECT r.*, l.total_amount, l.status as loan_status,
              c.id as customer_id,  
              CONCAT(c.first_name, ' ', c.last_name) as customer_name
@@ -91,9 +93,18 @@ router.get("/approved", async (req, res) => {
       JOIN customers c ON l.customer_id = c.id
       WHERE r.status = 'paid'
     `;
-    const [results] = await connection.promise().query(sql);
 
-    // Count the number of pending repayments
+    const queryParams = [];
+
+    // Add filtering for officer role
+    if (role === "officer") {
+      sql += " AND l.officer_id = ?";
+      queryParams.push(officerId);
+    }
+
+    const [results] = await connection.promise().query(sql, queryParams);
+
+    // Count the number of approved repayments
     const count = results.length;
 
     res.status(200).json({
@@ -101,8 +112,8 @@ router.get("/approved", async (req, res) => {
       data: results,
     });
   } catch (err) {
-    console.error("Error getting pending repayments:", err);
-    res.status(500).json({ error: "Error getting pending repayments" });
+    console.error("Error getting approved repayments:", err);
+    res.status(500).json({ error: "Error getting approved repayments" });
   }
 });
 

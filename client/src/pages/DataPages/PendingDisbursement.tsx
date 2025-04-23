@@ -36,10 +36,16 @@ const PendingDisbursement = () => {
   const [selectedLoanId, setSelectedLoanId] = useState<number | null>(null);
   const [mpesaCode, setMpesaCode] = useState<string>("");
 
-  const fetchPendingDisbursementLoans = async () => {
+  const role = JSON.parse(localStorage.getItem("role") || "''");
+  const officerId = localStorage.getItem("userId") || "";
+
+  const fetchPendingDisbursementLoans = async (
+    role: string,
+    officerId: string
+  ): Promise<void> => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/loans/loan-details/pending-disbursement"
+        `http://localhost:8000/api/loans/loan-details/pending-disbursement?role=${role}&officerId=${officerId}`
       );
       console.log(
         "Pending disbursement loans fetched successfully:",
@@ -52,8 +58,8 @@ const PendingDisbursement = () => {
   };
 
   useEffect(() => {
-    fetchPendingDisbursementLoans();
-  }, []);
+    fetchPendingDisbursementLoans(role, officerId);
+  }, [role, officerId]);
 
   const handleDisburseClick = (loanId: number) => {
     setSelectedLoanId(loanId); // Set the loan ID for disbursement
@@ -83,7 +89,7 @@ const PendingDisbursement = () => {
         }
       );
       console.log("Loan disbursed successfully");
-      fetchPendingDisbursementLoans(); // Refresh the list after disbursement
+      fetchPendingDisbursementLoans(role, officerId); // Refresh the list after disbursement
       closeModal(); // Close the modal
       setMpesaCode(""); // Clear the Mpesa code input
       setSelectedLoanId(null); // Clear the selected loan ID
