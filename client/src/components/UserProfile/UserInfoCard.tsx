@@ -4,7 +4,7 @@ import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface User {
   id: number;
@@ -27,8 +27,9 @@ export default function UserInfoCard() {
   const [data, setData] = useState<User[]>([]);
 
   const id = localStorage.getItem("userId");
+  console.log("id is", id);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const response = await axios.get(`http://localhost:8000/api/users/${id}`);
       setData(response.data);
@@ -36,10 +37,10 @@ export default function UserInfoCard() {
     } catch (error) {
       console.log("Error fetching users:", error);
     }
-  };
+  }, [id]);
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
   return (
     <div>

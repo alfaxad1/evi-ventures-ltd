@@ -13,6 +13,7 @@ interface userData {
   email: string;
   role: string;
   password: string;
+  avatar?: File; // Add avatar field
 }
 
 export default function SignUpForm() {
@@ -24,6 +25,7 @@ export default function SignUpForm() {
     role: "",
     password: "",
   });
+  const [avatar, setAvatar] = useState<File | null>(null); // State for avatar file
 
   const handleSelectChange = (value: string) => {
     setFormData({
@@ -31,22 +33,42 @@ export default function SignUpForm() {
       role: value,
     });
   };
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
-  
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setAvatar(e.target.files[0]); // Set the selected file
+    }
+  };
 
   const navigate = useNavigate();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("firstName", formData.firstName);
+      formDataToSend.append("lastName", formData.lastName);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("role", formData.role);
+      formDataToSend.append("password", formData.password);
+      if (avatar) {
+        formDataToSend.append("avatar", avatar); // Append avatar file
+      }
+
       const response = await axios.post(
         "http://localhost:8000/api/users/register",
-        formData
+        formDataToSend,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
       navigate("/signin");
       console.log("Form submitted successfully:", response);
@@ -54,6 +76,7 @@ export default function SignUpForm() {
       console.error("Error submitting form:", error);
     }
   };
+
   return (
     <div className="flex flex-col flex-1 w-full overflow-y-auto lg:w-1/2 no-scrollbar">
       <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
@@ -63,14 +86,14 @@ export default function SignUpForm() {
               Sign Up
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Enter your email and password to sign up!
+              Enter your details to sign up!
             </p>
           </div>
           <div>
             <form onSubmit={(e) => handleSubmit(e)}>
               <div className="space-y-5">
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  {/* <!-- First Name --> */}
+                  {/* First Name */}
                   <div className="sm:col-span-1">
                     <Label>
                       First Name<span className="text-error-500">*</span>
@@ -83,7 +106,7 @@ export default function SignUpForm() {
                       placeholder="Enter your first name"
                     />
                   </div>
-                  {/* <!-- Last Name --> */}
+                  {/* Last Name */}
                   <div className="sm:col-span-1">
                     <Label>
                       Last Name<span className="text-error-500">*</span>
@@ -97,7 +120,7 @@ export default function SignUpForm() {
                     />
                   </div>
                 </div>
-                {/* <!-- Email --> */}
+                {/* Email */}
                 <div>
                   <Label>
                     Email<span className="text-error-500">*</span>
@@ -110,7 +133,7 @@ export default function SignUpForm() {
                     placeholder="Enter your email"
                   />
                 </div>
-                {/* <!-- Role --> */}
+                {/* Role */}
                 <div>
                   <Label>
                     Role<span className="text-error-500">*</span>
@@ -124,7 +147,7 @@ export default function SignUpForm() {
                     placeholder="Select your role"
                   />
                 </div>
-                {/* <!-- Password --> */}
+                {/* Password */}
                 <div>
                   <Label>
                     Password<span className="text-error-500">*</span>
@@ -148,8 +171,17 @@ export default function SignUpForm() {
                     </span>
                   </div>
                 </div>
-
-                {/* <!-- Button --> */}
+                {/* Avatar */}
+                <div>
+                  <Label>Avatar</Label>
+                  <Input
+                    type="file"
+                    name="avatar"
+                    accept="image/*"
+                    onChange={(e) => handleFileChange(e)}
+                  />
+                </div>
+                {/* Submit Button */}
                 <div>
                   <Button className="w-full" size="sm" type="submit">
                     Sign up
@@ -160,7 +192,7 @@ export default function SignUpForm() {
 
             <div className="mt-5">
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                Already have an account? {""}
+                Already have an account?{" "}
                 <Link
                   to="/signin"
                   className="text-brand-500 hover:text-brand-600 dark:text-brand-400"

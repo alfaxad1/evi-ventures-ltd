@@ -3,12 +3,39 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import connection from "../config/dbConnection.js";
 import dotenv from "dotenv";
+import multer from "multer";
+import path from "path";
 dotenv.config();
 
 const router = express.Router();
 router.use(express.json());
 
 const salt = 10;
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/avatars"); // Directory to store uploaded avatars
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(
+      null,
+      `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`
+    );
+  },
+});
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only .jpeg, .jpg, and .png files are allowed"));
+    }
+  },
+});
 
 //get all users
 router.get("/", (req, res) => {
@@ -72,26 +99,33 @@ router.delete("/:id", (req, res) => {
 });
 
 //register a user
-router.post("/register", (req, res) => {
+router.post("/register", upload.single("avatar"), (req, res) => {
   const sql =
-    "INSERT INTO users (first_name, last_name, email, password, role, is_active) VALUES (?)";
+    "INSERT INTO users (first_name, last_name, email, password, role, is_active, avatar) VALUES (?)";
   bcrypt.hash(req.body.password, salt, (err, hash) => {
-    if (err) return res.status(500).json({ error: "error hashing password" });
+    if (err) return res.status(500).json({ error: "Error hashing password" });
+
+    const avatarPath = req.file
+      ? `/uploads/avatars/${req.file.filename}`
+      : null;
+
     const values = [
       req.body.firstName,
       req.body.lastName,
       req.body.email,
       hash,
       req.body.role.toLowerCase(),
-      (req.body.isActive = 1),
+      1, // is_active is set to 1 by default
+      avatarPath,
     ];
-    connection.query(sql, [values], (err, result) => {
-      console.log(values);
 
-      if (err) return res.status(500).json({ error: "error registering user" });
-      res
-        .status(200)
-        .json({ message: "User registered successfully", Status: "Success" });
+    connection.query(sql, [values], (err, result) => {
+      if (err) return res.status(500).json({ error: "Error registering user" });
+      res.status(200).json({
+        message: "User registered successfully",
+        Status: "Success",
+        avatar: avatarPath,
+      });
     });
   });
 });
@@ -117,7 +151,7 @@ router.post("/login", (req, res) => {
             expiresIn: "1h",
           });
 
-          res.status(200).json({ token, role, name, email });
+          res.status(200).json({ token, role, name, email, id });
         } else {
           res.status(401).json({ error: "Invalid email or password" });
         }
