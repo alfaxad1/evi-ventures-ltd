@@ -15,7 +15,7 @@ const validateLoanApplication = [
     .isFloat({ min: 1000 })
     .withMessage("Amount must be at least 1000"),
   body("purpose")
-    .isLength({ min: 10 })
+    .isLength({ min: 5 })
     .withMessage("Purpose must be at least 10 characters"),
   body("status")
     .optional()
@@ -299,7 +299,6 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
           total_interest = ?, 
           total_amount = ?, 
           installment_amount = ?, 
-           
           due_date = ?, 
           status = 'pending_disbursement' 
       WHERE id = ?`,
@@ -322,7 +321,7 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
     await connection
       .promise()
       .query(
-        "UPDATE loans SET approval_status = 'approved' approval_date = NOW() WHERE id = ?",
+        "UPDATE loans SET approval_status = 'approved', approval_date = NOW() WHERE id = ?",
         [req.params.id]
       );
 
@@ -343,11 +342,8 @@ router.put("/reject/:id", authorizeRoles(["admin"]), async (req, res) => {
     const [result] = await connection
       .promise()
       .query(
-        "UPDATE loan_applications SET status = 'rejected', comments = CONCAT(IFNULL(comments, ''), ?) WHERE id = ? AND status = 'pending'",
-        [
-          req.body.reason ? `\nRejection reason: ${req.body.reason}` : "",
-          req.params.id,
-        ]
+        "UPDATE loans SET approval_status = 'rejected', rejection_date = NOW(), rejection_reason = ? WHERE id = ? AND approval_status = 'pending'",
+        [req.body.reason, req.params.id]
       );
 
     if (result.affectedRows === 0) {

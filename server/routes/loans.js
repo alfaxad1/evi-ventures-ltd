@@ -115,7 +115,7 @@ router.get("/loan-details", async (req, res) => {
         c.national_id,
         c.phone,
         lp.name AS loan_product,
-        la.purpose,
+        l.purpose, -- Purpose is now stored in the loans table
         l.disbursement_date,
         l.due_date,
         l.principal,
@@ -130,8 +130,7 @@ router.get("/loan-details", async (req, res) => {
         DATEDIFF(l.due_date, CURDATE()) as days_remaining
       FROM loans l
       JOIN customers c ON l.customer_id = c.id
-      JOIN loan_applications la ON l.application_id = la.id
-      JOIN loan_products lp ON la.product_id = lp.id
+      JOIN loan_products lp ON l.product_id = lp.id -- Use product_id directly from loans table
     `;
 
     const whereClauses = [];
