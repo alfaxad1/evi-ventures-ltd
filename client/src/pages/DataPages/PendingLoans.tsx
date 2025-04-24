@@ -27,7 +27,7 @@ interface pendingLoan {
   amount: number;
   purpose: string;
   comments: string;
-  application_id: number;
+  loan_id: number;
 }
 
 const PendingLoans = () => {
@@ -186,18 +186,7 @@ const PendingLoans = () => {
                   >
                     Phone Number
                   </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Occupation
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Address
-                  </TableCell>
+
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
@@ -222,12 +211,7 @@ const PendingLoans = () => {
                   >
                     Purpose
                   </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Comments
-                  </TableCell>
+
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
@@ -250,12 +234,7 @@ const PendingLoans = () => {
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       {loan.phone}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {loan.occupation}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.address}
-                    </TableCell>
+
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.monthly_income}
                     </TableCell>
@@ -268,15 +247,11 @@ const PendingLoans = () => {
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.purpose}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.comments}
-                    </TableCell>
+
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       <div className="flex flex-col">
                         <button
-                          onClick={() =>
-                            handleApproveClick(loan.application_id)
-                          }
+                          onClick={() => handleApproveClick(loan.loan_id)}
                           className="bg-success-500 text-white text-sm  py-1 rounded-md mb-2 w-16"
                         >
                           Approve
@@ -284,7 +259,7 @@ const PendingLoans = () => {
                       </div>
                       <div>
                         <button
-                          onClick={() => handleRejectClick(loan.application_id)}
+                          onClick={() => handleRejectClick(loan.loan_id)}
                           className="bg-error-500 text-white text-sm  py-1 rounded-md mr-2 w-16"
                         >
                           Reject

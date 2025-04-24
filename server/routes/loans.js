@@ -231,7 +231,7 @@ router.get("/loan-details/pending-disbursement", async (req, res) => {
         c.national_id,
         c.phone,
         lp.name AS loan_product,
-        la.purpose,
+        l.purpose, -- Purpose is now stored in the loans table
         l.principal,
         l.total_interest,
         l.total_amount,
@@ -240,8 +240,7 @@ router.get("/loan-details/pending-disbursement", async (req, res) => {
         DATEDIFF(l.due_date, CURDATE()) as days_remaining
       FROM loans l
       JOIN customers c ON l.customer_id = c.id
-      JOIN loan_applications la ON l.application_id = la.id
-      JOIN loan_products lp ON la.product_id = lp.id
+      JOIN loan_products lp ON l.product_id = lp.id -- Use product_id directly from loans table
       WHERE l.status = 'pending_disbursement'
     `;
 
@@ -305,8 +304,8 @@ router.put("/disburse/:loanId", authorizeRoles(["admin"]), async (req, res) => {
     const [updateResult] = await connection
       .promise()
       .query(
-        "UPDATE loans SET status = 'active', disbursement_date = NOW() WHERE id = ? AND status = 'pending_disbursement'",
-        [req.params.loanId]
+        "UPDATE loans SET status = 'active', disbursement_date = NOW(), mpesa_code = ? WHERE id = ? AND status = 'pending_disbursement'",
+        [mpesaCode, req.params.loanId]
       );
 
     if (updateResult.affectedRows === 0) {

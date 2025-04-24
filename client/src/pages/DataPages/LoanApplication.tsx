@@ -12,7 +12,7 @@ interface LoanApplicationData {
   productId: number;
   amount: number;
   purpose: string;
-  comments: string;
+
   customerId: number;
   installmentType: string;
   //officerId: number;
@@ -22,7 +22,7 @@ const LoanApplication = () => {
   const [formData, setFormData] = useState<LoanApplicationData>({
     amount: 0,
     purpose: "",
-    comments: "",
+
     productId: 0,
     customerId: 0,
     installmentType: "",
@@ -91,7 +91,6 @@ const LoanApplication = () => {
     setFormData({
       amount: 0,
       purpose: "",
-      comments: "",
       productId: 0,
       customerId: 0,
       installmentType: "",
@@ -161,16 +160,6 @@ const LoanApplication = () => {
                 placeholder="Purpose"
                 name="purpose"
                 onChange={(e) => handleChange(e)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="comments">Comments</Label>
-              <Input
-                type="text"
-                placeholder="Enter some comments"
-                name="comments"
-                onChange={(e) => handleChange(e)}
-                value={formData.comments}
               />
             </div>
           </div>

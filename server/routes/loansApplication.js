@@ -101,18 +101,17 @@ router.get("/", async (req, res) => {
 // Get pending loan applications with extended customer details
 router.get("/pending", async (req, res) => {
   try {
-    const [applications] = await connection.promise().query(`
+    const [loans] = await connection.promise().query(`
       SELECT 
-        la.id AS application_id,  
-        la.customer_id,
-        la.product_id,
-        la.officer_id,
-        la.amount,
-        la.purpose,
-        la.status,
-        la.created_at,
-        la.approval_date,
-        la.comments,
+        l.id AS loan_id,
+        l.customer_id,
+        l.product_id,
+        l.officer_id,
+        l.applied_amount AS amount,
+        l.purpose,
+        l.approval_status AS status,
+        l.created_at,
+        l.expected_completion_date,
         CONCAT(c.first_name, ' ', c.last_name) AS customer_full_name,
         c.occupation,
         c.monthly_income,
@@ -124,23 +123,21 @@ router.get("/pending", async (req, res) => {
         lp.max_amount,
         lp.interest_rate,
         lp.duration_days
-      FROM loan_applications la
-      JOIN customers c ON la.customer_id = c.id
-      JOIN loan_products lp ON la.product_id = lp.id
-      WHERE la.status = 'pending'
-      ORDER BY la.created_at DESC
+      FROM loans l
+      JOIN customers c ON l.customer_id = c.id
+      JOIN loan_products lp ON l.product_id = lp.id
+      WHERE l.approval_status = 'pending'
+      ORDER BY l.created_at DESC
     `);
 
-    res.status(200).json(applications);
+    res.status(200).json(loans);
   } catch (err) {
-    console.error("Error getting pending applications:", err);
+    console.error("Error getting pending loans:", err);
     res.status(500).json({
-      error: "Failed to retrieve pending applications",
-      //details: process.env.NODE_ENV === "development" ? err.message : undefined,
+      error: "Failed to retrieve pending loans",
     });
   }
 });
-
 //rejected loans
 router.get("/rejected", async (req, res) => {
   try {
@@ -251,20 +248,37 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
     await connection.promise().beginTransaction();
 
     // Get application details
-    const [application] = await connection
+    const [loan] = await connection
       .promise()
-      .query("SELECT * FROM loan_applications WHERE id = ?", [req.params.id]);
+      .query("SELECT * FROM loans WHERE id = ?", [req.params.id]);
 
-    if (application.length === 0) {
-      return res.status(404).json({ error: "Loan application not found" });
+    if (loan.length === 0) {
+      return res.status(404).json({ error: "Loan not found" });
     }
 
-    const { installment_type, customer_id, product_id } = application[0];
+    const { installment_type, customer_id, product_id, officer_id } = loan[0];
+
+    // Get interest rate from the loan_products table
+    const [product] = await connection
+      .promise()
+      .query("SELECT interest_rate FROM loan_products WHERE id = ?", [
+        product_id,
+      ]);
+
+    if (product.length === 0) {
+      return res.status(404).json({ error: "Loan product not found" });
+    }
+
+    const interestRate = product[0].interest_rate;
 
     // Calculate interest and total amount
-    const interestAmount =
-      disbursedAmount * (application[0].interest_rate / 100);
+    const interestAmount = disbursedAmount * (interestRate / 100);
     const totalAmount = disbursedAmount + interestAmount;
+
+    console.log("Interest rate:", interestRate);
+    console.log("Disbursed amount:", disbursedAmount);
+    console.log("Interest amount:", interestAmount);
+    console.log("Total amount:", totalAmount);
 
     // Calculate installment amount and first due date
     let installmentAmount, firstDueDate;
@@ -278,26 +292,43 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
       firstDueDate.setDate(firstDueDate.getDate() + 7);
     }
 
-    // Create loan record
-    const [loanResult] = await connection.promise().query(
-      `INSERT INTO loans 
-      (application_id, customer_id, product_id, total_amount, installment_amount, installment_type, due_date, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'active')`,
+    // Update loan record
+    const [loanUpdateResult] = await connection.promise().query(
+      `UPDATE loans 
+      SET principal = ?, 
+          total_interest = ?, 
+          total_amount = ?, 
+          installment_amount = ?, 
+           
+          due_date = ?, 
+          status = 'pending_disbursement' 
+      WHERE id = ?`,
       [
-        req.params.id,
-        customer_id,
-        product_id,
+        disbursedAmount,
+        interestAmount,
         totalAmount,
         installmentAmount,
-        installment_type,
+
         firstDueDate,
+        req.params.id,
       ]
     );
 
+    if (loanUpdateResult.affectedRows === 0) {
+      return res.status(404).json({ error: "Loan record not found" });
+    }
+
+    // Update the approval status of the loan application to 'approved'
+    await connection
+      .promise()
+      .query(
+        "UPDATE loans SET approval_status = 'approved' approval_date = NOW() WHERE id = ?",
+        [req.params.id]
+      );
+
     await connection.promise().commit();
     res.status(200).json({
-      message: "Loan approved successfully",
-      loanId: loanResult.insertId,
+      message: "Loan approved successfully and updated to pending disbursement",
     });
   } catch (err) {
     await connection.promise().rollback();
@@ -344,7 +375,7 @@ router.post("/", validateLoanApplication, async (req, res) => {
       amount,
       purpose,
       status = "pending",
-      comments,
+
       installmentType, // Add installment type
     } = req.body;
 
@@ -370,9 +401,9 @@ router.post("/", validateLoanApplication, async (req, res) => {
 
     // Insert loan application
     const [result] = await connection.promise().query(
-      `INSERT INTO loan_applications 
-      (customer_id, product_id, officer_id, amount, purpose, status, comments, installment_type, expected_completion_date)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO loans 
+      (customer_id, product_id, officer_id, applied_amount, purpose, approval_status,  installment_type, expected_completion_date)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         customerId,
         productId,
@@ -380,7 +411,6 @@ router.post("/", validateLoanApplication, async (req, res) => {
         amount,
         purpose,
         status,
-        comments,
         installmentType,
         expectedCompletionDate,
       ]
