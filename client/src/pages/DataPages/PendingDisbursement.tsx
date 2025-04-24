@@ -70,6 +70,7 @@ const PendingDisbursement = () => {
     e.preventDefault(); // Prevent form submission
     if (!selectedLoanId || !mpesaCode) {
       alert("Please enter a valid Mpesa code.");
+
       return;
     }
 
@@ -117,8 +118,8 @@ const PendingDisbursement = () => {
     <>
       <ToastContainer position="bottom-right" />
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-        <div className="max-w-full overflow-x-auto">
-          <div className="min-w-[1102px]">
+        <div className="max-w-screen-lg mx-auto">
+          <div className="w-full overflow-x-auto">
             <Table>
               {/* Table Header */}
               <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
