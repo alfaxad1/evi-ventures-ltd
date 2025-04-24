@@ -527,7 +527,10 @@ router.put("/:id", validateLoanData, async (req, res) => {
 //loans due today
 router.get("/loan-details/due-today", async (req, res) => {
   try {
-    const [loans] = await connection.promise().query(`
+    const { officerId, role, page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
+
+    let baseQuery = `
       SELECT 
         l.id,
         CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
@@ -543,10 +546,45 @@ router.get("/loan-details/due-today", async (req, res) => {
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_products lp ON l.product_id = lp.id
       WHERE l.due_date = CURDATE() AND l.status IN ('active', 'partially_paid')
-      ORDER BY l.due_date ASC
-    `);
+    `;
 
-    res.status(200).json(loans);
+    const whereClauses = [];
+    const queryParams = [];
+
+    // Role-based filtering
+    if (role === "officer") {
+      whereClauses.push("l.officer_id = ?");
+      queryParams.push(officerId);
+    }
+
+    if (whereClauses.length > 0) {
+      baseQuery += ` AND ${whereClauses.join(" AND ")}`;
+    }
+
+    // Get total count
+    const [countResult] = await connection
+      .promise()
+      .query(
+        `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
+        queryParams
+      );
+    const total = countResult[0].total;
+
+    // Add pagination
+    const finalQuery = `${baseQuery} ORDER BY l.due_date ASC LIMIT ? OFFSET ?`;
+    const [loans] = await connection
+      .promise()
+      .query(finalQuery, [...queryParams, parseInt(limit), offset]);
+
+    res.status(200).json({
+      data: loans,
+      meta: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (err) {
     console.error("Error fetching loans due today:", err);
     res.status(500).json({ error: "Failed to retrieve loans due today" });
@@ -556,7 +594,10 @@ router.get("/loan-details/due-today", async (req, res) => {
 //loans due tommorrow
 router.get("/loan-details/due-tomorrow", async (req, res) => {
   try {
-    const [loans] = await connection.promise().query(`
+    const { officerId, role, page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
+
+    let baseQuery = `
       SELECT 
         l.id,
         CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
@@ -572,10 +613,45 @@ router.get("/loan-details/due-tomorrow", async (req, res) => {
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_products lp ON l.product_id = lp.id
       WHERE l.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY) AND l.status IN ('active', 'partially_paid')
-      ORDER BY l.due_date ASC
-    `);
+    `;
 
-    res.status(200).json(loans);
+    const whereClauses = [];
+    const queryParams = [];
+
+    // Role-based filtering
+    if (role === "officer") {
+      whereClauses.push("l.officer_id = ?");
+      queryParams.push(officerId);
+    }
+
+    if (whereClauses.length > 0) {
+      baseQuery += ` AND ${whereClauses.join(" AND ")}`;
+    }
+
+    // Get total count
+    const [countResult] = await connection
+      .promise()
+      .query(
+        `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
+        queryParams
+      );
+    const total = countResult[0].total;
+
+    // Add pagination
+    const finalQuery = `${baseQuery} ORDER BY l.due_date ASC LIMIT ? OFFSET ?`;
+    const [loans] = await connection
+      .promise()
+      .query(finalQuery, [...queryParams, parseInt(limit), offset]);
+
+    res.status(200).json({
+      data: loans,
+      meta: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (err) {
     console.error("Error fetching loans due tomorrow:", err);
     res.status(500).json({ error: "Failed to retrieve loans due tomorrow" });
@@ -584,7 +660,10 @@ router.get("/loan-details/due-tomorrow", async (req, res) => {
 //loans due 2-7 days
 router.get("/loan-details/due-2-7-days", async (req, res) => {
   try {
-    const [loans] = await connection.promise().query(`
+    const { officerId, role, page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
+
+    let baseQuery = `
       SELECT 
         l.id,
         CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
@@ -601,63 +680,48 @@ router.get("/loan-details/due-2-7-days", async (req, res) => {
       JOIN loan_products lp ON l.product_id = lp.id
       WHERE l.due_date BETWEEN DATE_ADD(CURDATE(), INTERVAL 2 DAY) AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
         AND l.status IN ('active', 'partially_paid')
-      ORDER BY l.due_date ASC
-    `);
-
-    res.status(200).json(loans);
-  } catch (err) {
-    console.error("Error fetching loans due in 2-7 days:", err);
-    res.status(500).json({ error: "Failed to retrieve loans due in 2-7 days" });
-  }
-});
-
-//overdue loans
-router.get("/loan-details/overdue", async (req, res) => {
-  try {
-    const { officerId, role } = req.query;
-
-    let baseQuery = `
-      SELECT 
-        l.id,
-        CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
-        c.national_id,
-        c.phone,
-        lp.name AS loan_product,
-        l.principal,
-        l.total_interest,
-        l.total_amount,
-        l.due_date,
-        DATEDIFF(CURDATE(), l.due_date) as days_overdue
-      FROM loans l
-      JOIN customers c ON l.customer_id = c.id
-      JOIN loan_products lp ON l.product_id = lp.id
     `;
 
     const whereClauses = [];
     const queryParams = [];
 
-    // Filter by officer_id if the user is an officer
+    // Role-based filtering
     if (role === "officer") {
       whereClauses.push("l.officer_id = ?");
       queryParams.push(officerId);
     }
 
-    // Add status filter for overdue loans
-    whereClauses.push("l.due_date < CURDATE()");
-    whereClauses.push("l.status IN ('active', 'partially_paid')");
-
     if (whereClauses.length > 0) {
-      baseQuery += ` WHERE ${whereClauses.join(" AND ")}`;
+      baseQuery += ` AND ${whereClauses.join(" AND ")}`;
     }
 
-    baseQuery += " ORDER BY l.due_date ASC";
+    // Get total count
+    const [countResult] = await connection
+      .promise()
+      .query(
+        `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
+        queryParams
+      );
+    const total = countResult[0].total;
 
-    const [loans] = await connection.promise().query(baseQuery, queryParams);
+    // Add pagination
+    const finalQuery = `${baseQuery} ORDER BY l.due_date ASC LIMIT ? OFFSET ?`;
+    const [loans] = await connection
+      .promise()
+      .query(finalQuery, [...queryParams, parseInt(limit), offset]);
 
-    res.status(200).json(loans);
+    res.status(200).json({
+      data: loans,
+      meta: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (err) {
-    console.error("Error fetching overdue loans:", err);
-    res.status(500).json({ error: "Failed to retrieve overdue loans" });
+    console.error("Error fetching loans due in 2-7 days:", err);
+    res.status(500).json({ error: "Failed to retrieve loans due in 2-7 days" });
   }
 });
 
