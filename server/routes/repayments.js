@@ -228,21 +228,16 @@ router.put("/:id", validateRepaymentData, async (req, res) => {
 
     // 2. Update the repayment
     const updateSql = `
-    UPDATE repayments 
-    SET status = ?
-    WHERE id = ?
-  `;
-    await connection.promise().query(updateSql, [stataus, id]);
+      UPDATE repayments 
+      SET status = ?, paid_date = NOW() 
+      WHERE id = ?
+    `;
+    await connection.promise().query(updateSql, [status, id]);
 
-    // 3. Handle status changes that affect loan balance
-    const statusChangedToPaid =
-      status === "paid" && currentRepayment[0].status !== "paid";
-    const statusChangedFromPaid =
-      status !== "paid" && currentRepayment[0].status === "paid";
-
-    if (statusChangedToPaid || statusChangedFromPaid) {
+    // 3. Handle loan updates
+    if (status === "paid") {
       // Record M-Pesa transaction if applicable
-      if (mpesaCode && status === "paid") {
+      if (mpesaCode) {
         const mpesaSql = `
           INSERT INTO mpesa_transactions 
             (customer_id, loan_id, amount, type, mpesa_code, status, initiated_by, created_at) 

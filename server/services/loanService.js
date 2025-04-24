@@ -47,65 +47,58 @@ export const checkLoanDefaults = async (connection) => {
 
 // Modified updateLoanStatus to include default checks
 export const updateLoanStatus = async (loanId, connection) => {
-  const remainingBalance = await calculateRemainingBalance(loanId, connection);
-
-  const [loanData] = await connection.promise().query(
-    `
-      SELECT 
-        l.total_amount,
-        l.status as current_status,
-        l.due_date,
-        COUNT(r.id) as payment_count
-      FROM loans l
-      LEFT JOIN repayments r ON r.loan_id = l.id AND r.status = 'paid'
-      WHERE l.id = ?
-      GROUP BY l.id
-    `,
-    [loanId]
-  );
-
-  if (loanData.length === 0) return;
-
-  const { total_amount, current_status, due_date, payment_count } = loanData[0];
-
-  let newStatus = current_status;
-  let updateFields = { remaining_balance: remainingBalance };
-
-  // Status transition logic
-  if (remainingBalance <= 0) {
-    newStatus = "paid";
-    updateFields.completed_date = new Date();
-  } else if (payment_count > 0) {
-    newStatus = "partially_paid";
-    if (current_status === "active") {
-      updateFields.first_payment_date = new Date();
-    }
-  } else {
-    newStatus = "active";
-  }
-
-  // Check for overdue status
-  const isOverdue = new Date(due_date) < new Date();
-  if (isOverdue && newStatus !== "paid") {
-    newStatus = "overdue";
-    //updateFields.overdue_since = due_date;
-  }
-
-  // Add newStatus to updateFields
-  updateFields.status = newStatus;
-
   try {
-    await connection
+    // Get loan details
+    const [loan] = await connection
       .promise()
-      .query(`UPDATE loans SET ? WHERE id = ?`, [updateFields, loanId]);
+      .query("SELECT * FROM loans WHERE id = ?", [loanId]);
+
+    if (loan.length === 0) {
+      throw new Error("Loan not found");
+    }
+
+    const { total_amount, due_date, arrears } = loan[0];
+
+    // Calculate installments sum
+    const [installments] = await connection
+      .promise()
+      .query(
+        "SELECT IFNULL(SUM(amount), 0) as installments_sum FROM repayments WHERE loan_id = ? AND status = 'paid'",
+        [loanId]
+      );
+
+    const installmentsSum = installments[0].installments_sum;
+
+    // Calculate remaining balance
+    const remainingBalance = total_amount - installmentsSum;
+
+    // Determine new loan status
+    let newStatus = loan[0].status;
+    let newArrears = arrears;
+
+    if (installmentsSum >= total_amount) {
+      newStatus = "paid";
+      newArrears = 0; // Clear arrears when fully paid
+    } else if (new Date(due_date) < new Date() && arrears > 0) {
+      newStatus = "defaulted"; // Mark as defaulted if arrears exist on due date
+    } else if (installmentsSum > 0) {
+      newStatus = "partially_paid";
+    } else {
+      newStatus = "active";
+    }
+
+    // Update loan record
+    await connection.promise().query(
+      `UPDATE loans 
+      SET installments_sum = ?, 
+          remaining_balance = ?, 
+          arrears = ?, 
+          status = ? 
+      WHERE id = ?`,
+      [installmentsSum, remainingBalance, newArrears, newStatus, loanId]
+    );
   } catch (err) {
     console.error("Error updating loan status:", err);
-  }
-
-  // Check for defaults after update
-  try {
-    await checkLoanDefaults(connection);
-  } catch (err) {
-    console.error("Error checking loan defaults:", err);
+    throw err;
   }
 };
