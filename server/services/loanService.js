@@ -102,3 +102,49 @@ export const updateLoanStatus = async (loanId, connection) => {
     throw err;
   }
 };
+
+//check for missed repayments
+export const checkMissedPayments = async (connection) => {
+  try {
+    // Find loans with missed payments
+    const [missedLoans] = await connection.promise().query(`
+      SELECT 
+        id, 
+        installment_amount, 
+        installment_type, 
+        due_date, 
+        arrears 
+      FROM loans 
+      WHERE status IN ('active', 'partially_paid') 
+      AND due_date < CURDATE()
+    `);
+
+    for (const loan of missedLoans) {
+      const { id, installment_amount, installment_type, due_date, arrears } =
+        loan;
+
+      // Add missed installment to arrears
+      const newArrears = arrears + installment_amount;
+
+      // Calculate the next due date
+      let nextDueDate = new Date(due_date);
+      if (installment_type === "daily") {
+        nextDueDate.setDate(nextDueDate.getDate() + 1);
+      } else if (installment_type === "weekly") {
+        nextDueDate.setDate(nextDueDate.getDate() + 7);
+      }
+
+      // Update loan record
+      await connection.promise().query(
+        `UPDATE loans 
+        SET arrears = ?, 
+            due_date = ? 
+        WHERE id = ?`,
+        [newArrears, nextDueDate, id]
+      );
+    }
+  } catch (err) {
+    console.error("Error checking missed payments:", err);
+    throw err;
+  }
+};
