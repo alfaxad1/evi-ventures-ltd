@@ -144,7 +144,7 @@ router.get("/:id", async (req, res) => {
 
 // Create a new repayment with loan status updates
 router.post("/", validateRepaymentData, async (req, res) => {
-  const { loanId, amount } = req.body;
+  const { loanId, amount, mpesaCode } = req.body;
 
   try {
     await connection.promise().beginTransaction();
@@ -158,7 +158,13 @@ router.post("/", validateRepaymentData, async (req, res) => {
       return res.status(404).json({ error: "Loan not found" });
     }
 
-    const { installment_amount, installment_type, due_date, arrears } = loan[0];
+    const {
+      installment_amount,
+      installment_type,
+      due_date,
+      arrears,
+      officer_id,
+    } = loan[0];
 
     let newArrears = arrears || 0;
     let nextDueDate = new Date(due_date);
@@ -187,9 +193,9 @@ router.post("/", validateRepaymentData, async (req, res) => {
 
     // Record repayment
     await connection.promise().query(
-      `INSERT INTO repayments (loan_id, amount, paid_date) 
-      VALUES (?, ?, NOW())`,
-      [loanId, amount]
+      `INSERT INTO repayments (loan_id, amount, due_date, paid_date, status, mpesa_code, created_by, created_at) 
+      VALUES (?, ?, ?, NOW(), 'pending', ?, ?, NOW())`,
+      [loanId, amount, nextDueDate, mpesaCode, officer_id]
     );
 
     await connection.promise().commit();
@@ -201,7 +207,7 @@ router.post("/", validateRepaymentData, async (req, res) => {
   }
 });
 
-// Update repayment and handle status changes
+// Approve repayment and handle status changes
 router.put("/:id", validateRepaymentData, async (req, res) => {
   const { id } = req.params;
   const { loanId, amount, status, mpesaCode, customerId, initiatedBy } =
@@ -226,7 +232,7 @@ router.put("/:id", validateRepaymentData, async (req, res) => {
     SET status = ?
     WHERE id = ?
   `;
-    await connection.promise().query(updateSql, [status, id]);
+    await connection.promise().query(updateSql, [stataus, id]);
 
     // 3. Handle status changes that affect loan balance
     const statusChangedToPaid =
