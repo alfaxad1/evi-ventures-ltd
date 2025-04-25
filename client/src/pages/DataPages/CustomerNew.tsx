@@ -28,8 +28,8 @@ type Guarantor = {
   relationship: string;
   business_location: string;
   residence_details: string;
-  national_id_photo: File | null;
-  passport_photo: File | null;
+  id_photo: File | null;
+  pass_photo: File | null;
   collaterals: GuarantorCollateral[];
 };
 
@@ -87,8 +87,8 @@ const CustomerNew: React.FC = () => {
         relationship: "",
         business_location: "",
         residence_details: "",
-        national_id_photo: null,
-        passport_photo: null,
+        id_photo: null,
+        pass_photo: null,
         collaterals: [{ item_name: "", item_count: 1, additional_details: "" }],
       },
     ],
@@ -222,8 +222,8 @@ const CustomerNew: React.FC = () => {
           relationship: "",
           business_location: "",
           residence_details: "",
-          national_id_photo: null,
-          passport_photo: null,
+          id_photo: null,
+          pass_photo: null,
           collaterals: [
             { item_name: "", item_count: 1, additional_details: "" },
           ],
@@ -319,16 +319,16 @@ const CustomerNew: React.FC = () => {
           }
         });
 
-        if (guarantor.national_id_photo) {
+        if (guarantor.id_photo) {
           formDataToSend.append(
-            `guarantors[${gIndex}][national_id_photo]`,
-            guarantor.national_id_photo
+            `guarantors[${gIndex}][id_photo]`,
+            guarantor.id_photo
           );
         }
-        if (guarantor.passport_photo) {
+        if (guarantor.pass_photo) {
           formDataToSend.append(
-            `guarantors[${gIndex}][passport_photo]`,
-            guarantor.passport_photo
+            `guarantors[${gIndex}][pass_photo]`,
+            guarantor.pass_photo
           );
         }
 
@@ -669,7 +669,7 @@ const CustomerNew: React.FC = () => {
                   </label>
                   <input
                     type="file"
-                    name="national_id_photo"
+                    name="id_photo"
                     onChange={(e) => handleGuarantorFileChange(gIndex, e)}
                     accept="image/*"
                     required
@@ -687,7 +687,7 @@ const CustomerNew: React.FC = () => {
                   </label>
                   <input
                     type="file"
-                    name="passport_photo"
+                    name="pass_photo"
                     onChange={(e) => handleGuarantorFileChange(gIndex, e)}
                     accept="image/*"
                     className="mt-1 block w-full text-sm text-gray-500

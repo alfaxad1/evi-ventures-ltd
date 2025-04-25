@@ -142,7 +142,7 @@ router.post(
           const [guarantorResult] = await db.query(
             `INSERT INTO guarantors 
           (customer_id, name, id_number, phone_number, relationship, 
-           business_location, residence_details, national_id_photo, passport_photo)
+           business_location, residence_details, id_photo, pass_photo)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               customerId,
@@ -152,8 +152,8 @@ router.post(
               guarantor.relationship,
               guarantor.business_location,
               guarantor.residence_details,
-              guarantor.national_id_photo_path,
-              guarantor.passport_photo_path,
+              guarantor.id_photo_path,
+              guarantor.pass_photo_path,
             ]
           );
 
