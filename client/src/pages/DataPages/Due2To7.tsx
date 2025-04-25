@@ -188,9 +188,9 @@ const Due2To7 = () => {
                       {loan.total_amount}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.due_date}
+                      {loan.due_date.split("T")[0]}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="px-4 py-3 text-gray-500  text-theme-sm dark:text-gray-400 text-center">
                       {loan.days_remaining}
                     </TableCell>
                   </TableRow>
@@ -199,8 +199,9 @@ const Due2To7 = () => {
             </Table>
           )}
           {meta && dueLoans.length > 0 && (
-            <div style={{ marginTop: "20px" }}>
+            <div className="flex items-center justify-end gap-2 py-4 px-5">
               <button
+                className="text-blue-400"
                 onClick={() => handlePageChange(page - 1)}
                 disabled={page === 1}
               >
@@ -210,6 +211,7 @@ const Due2To7 = () => {
                 Page {meta.page} of {meta.totalPages}
               </span>
               <button
+                className="text-blue-400"
                 onClick={() => handlePageChange(page + 1)}
                 disabled={page === meta.totalPages}
               >

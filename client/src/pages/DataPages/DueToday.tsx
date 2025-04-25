@@ -188,8 +188,9 @@ const DueToday = () => {
             </Table>
           )}
           {meta && dueLoans.length > 0 && (
-            <div style={{ marginTop: "20px" }}>
+            <div>
               <button
+                className=""
                 onClick={() => handlePageChange(page - 1)}
                 disabled={page === 1}
               >
