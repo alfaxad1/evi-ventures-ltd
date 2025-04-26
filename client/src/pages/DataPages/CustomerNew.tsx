@@ -400,7 +400,186 @@ const CustomerNew: React.FC = () => {
               />
             </div>
 
-            {/* Add all other personal info fields similarly */}
+            <div className="form-group">
+              <label className="block text-sm font-medium text-gray-700">
+                Last Name*
+              </label>
+              <input
+                type="text"
+                name="last_name"
+                value={formData.last_name}
+                onChange={handleChange}
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="block text-sm font-medium text-gray-700">
+                Phone Number*
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="block text-sm font-medium text-gray-700">
+                National ID*
+              </label>
+              <input
+                type="text"
+                name="national_id"
+                value={formData.national_id}
+                onChange={handleChange}
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="block text-sm font-medium text-gray-700">
+                Date of Birth*
+              </label>
+              <input
+                type="date"
+                name="date_of_birth"
+                value={formData.date_of_birth}
+                onChange={handleChange}
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="block text-sm font-medium text-gray-700">
+                Gender*
+              </label>
+              <select
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="block text-sm font-medium text-gray-700">
+                Address*
+              </label>
+              <input
+                type="text"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="block text-sm font-medium text-gray-700">
+                County*
+              </label>
+              <input
+                type="text"
+                name="county"
+                value={formData.county}
+                onChange={handleChange}
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="block text-sm font-medium text-gray-700">
+                Occupation*
+              </label>
+              <input
+                type="text"
+                name="occupation"
+                value={formData.occupation}
+                onChange={handleChange}
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="block text-sm font-medium text-gray-700">
+                Business Name
+              </label>
+              <input
+                type="text"
+                name="business_name"
+                value={formData.business_name}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="block text-sm font-medium text-gray-700">
+                Business Location
+              </label>
+              <input
+                type="text"
+                name="business_location"
+                value={formData.business_location}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="block text-sm font-medium text-gray-700">
+                Residence Details
+              </label>
+              <textarea
+                name="residence_details"
+                value={formData.residence_details}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="block text-sm font-medium text-gray-700">
+                Monthly Income*
+              </label>
+              <input
+                type="number"
+                name="monthly_income"
+                value={formData.monthly_income}
+                onChange={handleChange}
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="block text-sm font-medium text-gray-700">
+                Credit Score
+              </label>
+              <input
+                type="number"
+                name="credit_score"
+                value={formData.credit_score}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
 
             <div className="form-group">
               <label className="block text-sm font-medium text-gray-700">
