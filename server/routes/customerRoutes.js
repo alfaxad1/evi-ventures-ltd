@@ -1,9 +1,9 @@
 // routes/customerRoutes.js
 import express from "express";
-import db from "../config/dbConnection.js";
-const router = express.Router();
+import connection from "../config/dbConnection.js";
 import multer from "multer";
 import path from "path";
+const router = express.Router();
 router.use(express.json());
 
 // Configure multer for file uploads
@@ -40,6 +40,9 @@ router.post(
   upload.fields([
     { name: "national_id_photo", maxCount: 1 },
     { name: "passport_photo", maxCount: 1 },
+    { name: "guarantor_id_photo_0", maxCount: 1 },
+    { name: "guarantor_pass_photo_0", maxCount: 1 },
+    // Add more if you expect multiple guarantors
   ]),
   async (req, res) => {
     try {
@@ -63,10 +66,10 @@ router.post(
       } = req.body;
 
       // Start transaction
-      await db.beginTransaction();
+      await connection.beginTransaction();
 
       // Insert customer
-      const [customerResult] = await db.query(
+      const [customerResult] = await connection.query(
         `INSERT INTO customers (
         first_name, middle_name, last_name, phone, national_id, date_of_birth,
         gender, address, county, occupation, business_name, business_location,
@@ -104,7 +107,7 @@ router.post(
       // Insert collaterals if provided
       if (req.body.collaterals && req.body.collaterals.length > 0) {
         for (const collateral of req.body.collaterals) {
-          await db.query(
+          await connection.query(
             `INSERT INTO customer_collaterals 
           (customer_id, item_name, item_count, additional_details)
           VALUES (?, ?, ?, ?)`,
@@ -121,7 +124,7 @@ router.post(
       // Insert referees if provided
       if (req.body.referees && req.body.referees.length > 0) {
         for (const referee of req.body.referees) {
-          await db.query(
+          await connection.query(
             `INSERT INTO referees 
           (customer_id, name, id_number, phone_number, relationship)
           VALUES (?, ?, ?, ?, ?)`,
@@ -139,7 +142,7 @@ router.post(
       // Insert guarantors if provided
       if (req.body.guarantors && req.body.guarantors.length > 0) {
         for (const guarantor of req.body.guarantors) {
-          const [guarantorResult] = await db.query(
+          const [guarantorResult] = await connection.query(
             `INSERT INTO guarantors 
           (customer_id, name, id_number, phone_number, relationship, 
            business_location, residence_details, id_photo, pass_photo)
@@ -162,7 +165,7 @@ router.post(
           // Insert guarantor collaterals if provided
           if (guarantor.collaterals && guarantor.collaterals.length > 0) {
             for (const collateral of guarantor.collaterals) {
-              await db.query(
+              await connection.query(
                 `INSERT INTO guarantor_collaterals 
               (guarantor_id, item_name, item_count, additional_details)
               VALUES (?, ?, ?, ?)`,
@@ -178,12 +181,12 @@ router.post(
         }
       }
 
-      await db.commit();
+      await connection.commit();
       res
         .status(201)
         .json({ message: "Customer created successfully", customerId });
     } catch (error) {
-      await db.rollback();
+      await connection.rollback();
       console.error("Error creating customer:", error);
       res.status(500).json({ error: "Failed to create customer" });
     }

@@ -321,13 +321,13 @@ const CustomerNew: React.FC = () => {
 
         if (guarantor.id_photo) {
           formDataToSend.append(
-            `guarantors[${gIndex}][id_photo]`,
+            `guarantor_id_photo_${gIndex}`,
             guarantor.id_photo
           );
         }
         if (guarantor.pass_photo) {
           formDataToSend.append(
-            `guarantors[${gIndex}][pass_photo]`,
+            `guarantor_pass_photo_${gIndex}`,
             guarantor.pass_photo
           );
         }
