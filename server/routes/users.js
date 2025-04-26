@@ -69,10 +69,9 @@ router.get("/officers", async (req, res) => {
 //get a user
 router.get("/:id", async (req, res) => {
   try {
-    const [result] = await connection.query(
-      "SELECT * FROM users WHERE id = ?",
-      [req.params.id]
-    );
+    const [result] = await connection
+      .promise()
+      .query("SELECT * FROM users WHERE id = ?", [req.params.id]);
     res.status(200).json(result);
   } catch (err) {
     console.error("Error getting user:", err);
@@ -83,10 +82,9 @@ router.get("/:id", async (req, res) => {
 //update a user
 router.put("/:id", async (req, res) => {
   try {
-    const [result] = await connection.query("UPDATE users SET ? WHERE id = ?", [
-      req.body,
-      req.params.id,
-    ]);
+    const [result] = await connection
+      .promise()
+      .query("UPDATE users SET ? WHERE id = ?", [req.body, req.params.id]);
     res
       .status(200)
       .json({ message: "User updated successfully", Status: "Success" });
@@ -99,9 +97,9 @@ router.put("/:id", async (req, res) => {
 //delete a user
 router.delete("/:id", async (req, res) => {
   try {
-    const [result] = await connection.query("DELETE FROM users WHERE id = ?", [
-      req.params.id,
-    ]);
+    const [result] = await connection
+      .promise()
+      .query("DELETE FROM users WHERE id = ?", [req.params.id]);
     res
       .status(200)
       .json({ message: "User deleted successfully", Status: "Success" });
@@ -147,10 +145,9 @@ router.post("/register", upload.single("avatar"), async (req, res) => {
 //login a user
 router.post("/login", async (req, res) => {
   try {
-    const [result] = await connection.query(
-      "SELECT * FROM users WHERE email = ?",
-      [req.body.email]
-    );
+    const [result] = await connection
+      .promise()
+      .query("SELECT * FROM users WHERE email = ?", [req.body.email]);
 
     if (result.length > 0) {
       if (!result[0].is_active) {

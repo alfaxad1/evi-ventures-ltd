@@ -53,17 +53,19 @@ router.get("/", async (req, res) => {
     }
 
     // Get total count for pagination metadata
-    const [countResult] = await connection.query(
-      `SELECT COUNT(*) as total FROM (${query}) as filtered`,
-      queryParams
-    );
+    const [countResult] = await connection
+      .promise()
+      .query(
+        `SELECT COUNT(*) as total FROM (${query}) as filtered`,
+        queryParams
+      );
     const total = countResult[0].total;
 
     // Get paginated customers
     query += " LIMIT ? OFFSET ?";
     queryParams.push(limit, offset);
 
-    const [customers] = await connection.query(query, queryParams);
+    const [customers] = await connection.promise().query(query, queryParams);
 
     res.status(200).json({
       data: customers,
@@ -83,17 +85,16 @@ router.get("/", async (req, res) => {
 // Get a single customer with loan summary
 router.get("/:id", async (req, res) => {
   try {
-    const [customer] = await connection.query(
-      "SELECT * FROM customers WHERE id = ?",
-      [req.params.id]
-    );
+    const [customer] = await connection
+      .promise()
+      .query("SELECT * FROM customers WHERE id = ?", [req.params.id]);
 
     if (customer.length === 0) {
       return res.status(404).json({ error: "Customer not found" });
     }
 
     // Get loan summary
-    const [loanSummary] = await connection.query(
+    const [loanSummary] = await connection.promise().query(
       `
       SELECT 
         COUNT(*) as total_loans,
@@ -134,10 +135,12 @@ router.post("/", validateCustomerData, async (req, res) => {
     } = req.body;
 
     // Check for duplicate phone or national ID
-    const [existing] = await connection.query(
-      "SELECT id FROM customers WHERE phone = ? OR national_id = ?",
-      [phone, nationalId]
-    );
+    const [existing] = await connection
+      .promise()
+      .query("SELECT id FROM customers WHERE phone = ? OR national_id = ?", [
+        phone,
+        nationalId,
+      ]);
 
     if (existing.length > 0) {
       return res.status(409).json({
@@ -145,7 +148,7 @@ router.post("/", validateCustomerData, async (req, res) => {
       });
     }
 
-    const [result] = await connection.query(
+    const [result] = await connection.promise().query(
       `INSERT INTO customers 
       (first_name, last_name, phone, national_id, date_of_birth, gender, address, county, occupation, monthly_income, credit_score, created_by) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -194,20 +197,21 @@ router.put("/:id", validateCustomerData, async (req, res) => {
     } = req.body;
 
     // Verify customer exists
-    const [existing] = await connection.query(
-      "SELECT id FROM customers WHERE id = ?",
-      [id]
-    );
+    const [existing] = await connection
+      .promise()
+      .query("SELECT id FROM customers WHERE id = ?", [id]);
 
     if (existing.length === 0) {
       return res.status(404).json({ error: "Customer not found" });
     }
 
     // Check for duplicate phone or national ID (excluding current customer)
-    const [duplicate] = await connection.query(
-      "SELECT id FROM customers WHERE (phone = ? OR national_id = ?) AND id != ?",
-      [phone, nationalId, id]
-    );
+    const [duplicate] = await connection
+      .promise()
+      .query(
+        "SELECT id FROM customers WHERE (phone = ? OR national_id = ?) AND id != ?",
+        [phone, nationalId, id]
+      );
 
     if (duplicate.length > 0) {
       return res.status(409).json({
@@ -215,7 +219,7 @@ router.put("/:id", validateCustomerData, async (req, res) => {
       });
     }
 
-    await connection.query(
+    await connection.promise().query(
       `UPDATE customers SET 
         first_name = ?, 
         last_name = ?, 
@@ -257,33 +261,37 @@ router.put("/:id", validateCustomerData, async (req, res) => {
 // Delete a customer (with validation)
 router.delete("/:id", async (req, res) => {
   try {
-    await connection.beginTransaction();
+    await connection.promise().beginTransaction();
 
     // Check if customer has active loans
-    const [activeLoans] = await connection.query(
-      "SELECT id FROM loans WHERE customer_id = ? AND status IN ('active', 'partially_paid')",
-      [req.params.id]
-    );
+    const [activeLoans] = await connection
+      .promise()
+      .query(
+        "SELECT id FROM loans WHERE customer_id = ? AND status IN ('active', 'partially_paid')",
+        [req.params.id]
+      );
 
     if (activeLoans.length > 0) {
-      await connection.rollback();
+      await connection.promise().rollback();
       return res.status(400).json({
         error: "Cannot delete customer with active loans",
       });
     }
 
     // Soft delete instead of hard delete
-    await connection.query(
-      "UPDATE customers SET is_active = FALSE, deleted_at = NOW() WHERE id = ?",
-      [req.params.id]
-    );
+    await connection
+      .promise()
+      .query(
+        "UPDATE customers SET is_active = FALSE, deleted_at = NOW() WHERE id = ?",
+        [req.params.id]
+      );
 
-    await connection.commit();
+    await connection.promise().commit();
     res.status(200).json({
       message: "Customer deactivated successfully",
     });
   } catch (err) {
-    await connection.rollback();
+    await connection.promise().rollback();
     console.error("Error deleting customer:", err);
     res.status(500).json({ error: "Failed to delete customer" });
   }

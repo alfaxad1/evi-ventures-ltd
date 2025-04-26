@@ -69,19 +69,19 @@ router.get("/", async (req, res) => {
     }
 
     // Get total count
-    const [countResult] = await connection.query(
-      `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
-      queryParams
-    );
+    const [countResult] = await connection
+      .promise()
+      .query(
+        `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
+        queryParams
+      );
     const total = countResult[0].total;
 
     // Add pagination
     const finalQuery = `${baseQuery} LIMIT ? OFFSET ?`;
-    const [applications] = await connection.query(finalQuery, [
-      ...queryParams,
-      parseInt(limit),
-      offset,
-    ]);
+    const [applications] = await connection
+      .promise()
+      .query(finalQuery, [...queryParams, parseInt(limit), offset]);
 
     res.status(200).json({
       data: applications,
@@ -101,7 +101,7 @@ router.get("/", async (req, res) => {
 // Get pending loan applications with extended customer details
 router.get("/pending", async (req, res) => {
   try {
-    const [loans] = await connection.query(`
+    const [loans] = await connection.promise().query(`
       SELECT 
         l.id AS loan_id,
         l.customer_id,
@@ -187,7 +187,7 @@ router.get("/rejected", async (req, res) => {
 
     sql += " ORDER BY la.created_at DESC";
 
-    const [applications] = await connection.query(sql, queryParams);
+    const [applications] = await connection.promise().query(sql, queryParams);
 
     res.status(200).json(applications);
   } catch (err) {
@@ -202,7 +202,7 @@ router.get("/rejected", async (req, res) => {
 // Get loan application by ID with full details
 router.get("/:id", async (req, res) => {
   try {
-    const [application] = await connection.query(
+    const [application] = await connection.promise().query(
       `
       SELECT 
         la.*,
@@ -245,12 +245,12 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
   }
 
   try {
-    await connection.beginTransaction();
+    await connection.promise().beginTransaction();
 
     // Get application details
-    const [loan] = await connection.query("SELECT * FROM loans WHERE id = ?", [
-      req.params.id,
-    ]);
+    const [loan] = await connection
+      .promise()
+      .query("SELECT * FROM loans WHERE id = ?", [req.params.id]);
 
     if (loan.length === 0) {
       return res.status(404).json({ error: "Loan not found" });
@@ -259,10 +259,11 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
     const { installment_type, customer_id, product_id, officer_id } = loan[0];
 
     // Get interest rate from the loan_products table
-    const [product] = await connection.query(
-      "SELECT interest_rate FROM loan_products WHERE id = ?",
-      [product_id]
-    );
+    const [product] = await connection
+      .promise()
+      .query("SELECT interest_rate FROM loan_products WHERE id = ?", [
+        product_id,
+      ]);
 
     if (product.length === 0) {
       return res.status(404).json({ error: "Loan product not found" });
@@ -292,7 +293,7 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
     }
 
     // Update loan record
-    const [loanUpdateResult] = await connection.query(
+    const [loanUpdateResult] = await connection.promise().query(
       `UPDATE loans 
       SET principal = ?, 
           total_interest = ?, 
@@ -317,17 +318,19 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
     }
 
     // Update the approval status of the loan application to 'approved'
-    await connection.query(
-      "UPDATE loans SET approval_status = 'approved', approval_date = NOW() WHERE id = ?",
-      [req.params.id]
-    );
+    await connection
+      .promise()
+      .query(
+        "UPDATE loans SET approval_status = 'approved', approval_date = NOW() WHERE id = ?",
+        [req.params.id]
+      );
 
-    await connection.commit();
+    await connection.promise().commit();
     res.status(200).json({
       message: "Loan approved successfully and updated to pending disbursement",
     });
   } catch (err) {
-    await connection.rollback();
+    await connection.promise().rollback();
     console.error("Error approving loan:", err);
     res.status(500).json({ error: "Failed to approve loan" });
   }
@@ -336,10 +339,12 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
 // Reject a loan application
 router.put("/reject/:id", authorizeRoles(["admin"]), async (req, res) => {
   try {
-    const [result] = await connection.query(
-      "UPDATE loans SET approval_status = 'rejected', rejection_date = NOW(), rejection_reason = ? WHERE id = ? AND approval_status = 'pending'",
-      [req.body.reason, req.params.id]
-    );
+    const [result] = await connection
+      .promise()
+      .query(
+        "UPDATE loans SET approval_status = 'rejected', rejection_date = NOW(), rejection_reason = ? WHERE id = ? AND approval_status = 'pending'",
+        [req.body.reason, req.params.id]
+      );
 
     if (result.affectedRows === 0) {
       return res
@@ -371,19 +376,17 @@ router.post("/", validateLoanApplication, async (req, res) => {
     } = req.body;
 
     // Verify customer exists
-    const [customer] = await connection.query(
-      "SELECT id FROM customers WHERE id = ?",
-      [customerId]
-    );
+    const [customer] = await connection
+      .promise()
+      .query("SELECT id FROM customers WHERE id = ?", [customerId]);
     if (customer.length === 0) {
       return res.status(404).json({ error: "Customer not found" });
     }
 
     // Verify product exists
-    const [product] = await connection.query(
-      "SELECT id FROM loan_products WHERE id = ?",
-      [productId]
-    );
+    const [product] = await connection
+      .promise()
+      .query("SELECT id FROM loan_products WHERE id = ?", [productId]);
     if (product.length === 0) {
       return res.status(404).json({ error: "Loan product not found" });
     }
@@ -393,7 +396,7 @@ router.post("/", validateLoanApplication, async (req, res) => {
     expectedCompletionDate.setDate(expectedCompletionDate.getDate() + 30);
 
     // Insert loan application
-    const [result] = await connection.query(
+    const [result] = await connection.promise().query(
       `INSERT INTO loans 
       (customer_id, product_id, officer_id, applied_amount, purpose, approval_status,  installment_type, expected_completion_date)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -427,17 +430,19 @@ router.put("/:id", validateLoanApplication, async (req, res) => {
       req.body;
 
     // Verify application exists and is pending
-    const [existing] = await connection.query(
-      "SELECT id FROM loan_applications WHERE id = ? AND status = 'pending'",
-      [id]
-    );
+    const [existing] = await connection
+      .promise()
+      .query(
+        "SELECT id FROM loan_applications WHERE id = ? AND status = 'pending'",
+        [id]
+      );
     if (existing.length === 0) {
       return res
         .status(400)
         .json({ error: "Application not found or already processed" });
     }
 
-    await connection.query(
+    await connection.promise().query(
       `UPDATE loan_applications SET 
         customer_id = ?, 
         product_id = ?, 
@@ -461,10 +466,12 @@ router.put("/:id", validateLoanApplication, async (req, res) => {
 // Delete a loan application
 router.delete("/:id", async (req, res) => {
   try {
-    const [result] = await connection.query(
-      "DELETE FROM loan_applications WHERE id = ? AND status = 'pending'",
-      [req.params.id]
-    );
+    const [result] = await connection
+      .promise()
+      .query(
+        "DELETE FROM loan_applications WHERE id = ? AND status = 'pending'",
+        [req.params.id]
+      );
 
     if (result.affectedRows === 0) {
       return res.status(400).json({
