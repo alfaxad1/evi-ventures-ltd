@@ -74,19 +74,19 @@ router.get("/", async (req, res) => {
     }
 
     // Get total count
-    const [countResult] = await connection
-      .promise()
-      .query(
-        `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
-        queryParams
-      );
+    const [countResult] = await connection.query(
+      `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
+      queryParams
+    );
     const total = countResult[0].total;
 
     // Add pagination and sorting
     const finalQuery = `${baseQuery} ORDER BY l.disbursement_date DESC LIMIT ? OFFSET ?`;
-    const [loans] = await connection
-      .promise()
-      .query(finalQuery, [...queryParams, parseInt(limit), offset]);
+    const [loans] = await connection.query(finalQuery, [
+      ...queryParams,
+      parseInt(limit),
+      offset,
+    ]);
 
     res.status(200).json({
       data: loans,
@@ -151,7 +151,7 @@ router.get("/loan-details", async (req, res) => {
 
     baseQuery += " ORDER BY l.disbursement_date DESC";
 
-    const [loans] = await connection.promise().query(baseQuery, queryParams);
+    const [loans] = await connection.query(baseQuery, queryParams);
 
     res.status(200).json(loans);
   } catch (err) {
@@ -209,7 +209,7 @@ router.get("/loan-details/paid", async (req, res) => {
 
     baseQuery += " ORDER BY l.disbursement_date DESC";
 
-    const [loans] = await connection.promise().query(baseQuery, queryParams);
+    const [loans] = await connection.query(baseQuery, queryParams);
 
     res.status(200).json(loans);
   } catch (err) {
@@ -253,7 +253,7 @@ router.get("/loan-details/pending-disbursement", async (req, res) => {
 
     sql += " ORDER BY l.id DESC";
 
-    const [loans] = await connection.promise().query(sql, queryParams);
+    const [loans] = await connection.query(sql, queryParams);
 
     res.status(200).json(loans);
   } catch (err) {
@@ -276,18 +276,16 @@ router.put("/disburse/:loanId", authorizeRoles(["admin"]), async (req, res) => {
   }
 
   try {
-    await connection.promise().beginTransaction();
+    await connection.beginTransaction();
 
     // 1. Fetch the customer_id and total_amount associated with the loan
-    const [loan] = await connection
-      .promise()
-      .query(
-        "SELECT customer_id, total_amount, officer_id FROM loans WHERE id = ? AND status = 'pending_disbursement'",
-        [req.params.loanId]
-      );
+    const [loan] = await connection.query(
+      "SELECT customer_id, total_amount, officer_id FROM loans WHERE id = ? AND status = 'pending_disbursement'",
+      [req.params.loanId]
+    );
 
     if (loan.length === 0) {
-      await connection.promise().rollback();
+      await connection.rollback();
       return res.status(400).json({
         error: "Loan not found or not in pending disbursement status",
       });
@@ -300,31 +298,29 @@ router.put("/disburse/:loanId", authorizeRoles(["admin"]), async (req, res) => {
     } = loan[0];
 
     // 2. Update loan status to active
-    const [updateResult] = await connection
-      .promise()
-      .query(
-        "UPDATE loans SET status = 'active', disbursement_date = NOW(), mpesa_code = ? WHERE id = ? AND status = 'pending_disbursement'",
-        [mpesaCode, req.params.loanId]
-      );
+    const [updateResult] = await connection.query(
+      "UPDATE loans SET status = 'active', disbursement_date = NOW(), mpesa_code = ? WHERE id = ? AND status = 'pending_disbursement'",
+      [mpesaCode, req.params.loanId]
+    );
 
     if (updateResult.affectedRows === 0) {
-      await connection.promise().rollback();
+      await connection.rollback();
       return res.status(400).json({
         error: "Failed to update loan status",
       });
     }
 
     // 3. Save transaction in mpesa_transactions table
-    await connection.promise().query(
+    await connection.query(
       `INSERT INTO mpesa_transactions (loan_id, customer_id, amount, type, mpesa_code, status, initiated_by, created_at) 
        VALUES (?, ?, ?, 'disbursement', ?, 'completed', ?, NOW())`,
       [req.params.loanId, customerId, amount, mpesaCode, initiatedBy]
     );
 
-    await connection.promise().commit();
+    await connection.commit();
     res.status(200).json({ message: "Loan disbursed successfully" });
   } catch (err) {
-    await connection.promise().rollback();
+    await connection.rollback();
     console.error("Error disbursing loan:", err);
     res.status(500).json({ error: "Failed to disburse loan" });
   }
@@ -332,7 +328,7 @@ router.put("/disburse/:loanId", authorizeRoles(["admin"]), async (req, res) => {
 // Get loan by ID with full details
 router.get("/:id", async (req, res) => {
   try {
-    const [loan] = await connection.promise().query(
+    const [loan] = await connection.query(
       `
       SELECT 
         l.*,
@@ -361,7 +357,7 @@ router.get("/:id", async (req, res) => {
     }
 
     // Get repayment history
-    const [repayments] = await connection.promise().query(
+    const [repayments] = await connection.query(
       `
       SELECT * FROM repayments 
       WHERE loan_id = ?
@@ -397,34 +393,35 @@ router.post("/", validateLoanData, async (req, res) => {
     } = req.body;
 
     // Verify application exists
-    const [application] = await connection
-      .promise()
-      .query("SELECT id FROM loan_applications WHERE id = ?", [applicationId]);
+    const [application] = await connection.query(
+      "SELECT id FROM loan_applications WHERE id = ?",
+      [applicationId]
+    );
     if (application.length === 0) {
       return res.status(404).json({ error: "Loan application not found" });
     }
 
     // Verify customer exists
-    const [customer] = await connection
-      .promise()
-      .query("SELECT id FROM customers WHERE id = ?", [customerId]);
+    const [customer] = await connection.query(
+      "SELECT id FROM customers WHERE id = ?",
+      [customerId]
+    );
     if (customer.length === 0) {
       return res.status(404).json({ error: "Customer not found" });
     }
 
     // Verify officer exists
-    const [officer] = await connection
-      .promise()
-      .query("SELECT id FROM users WHERE id = ? AND role = 'officer'", [
-        officerId,
-      ]);
+    const [officer] = await connection.query(
+      "SELECT id FROM users WHERE id = ? AND role = 'officer'",
+      [officerId]
+    );
     if (officer.length === 0) {
       return res.status(404).json({ error: "Loan officer not found" });
     }
     console.log("Loan officer:", officerId);
 
     // Create loan record
-    const [result] = await connection.promise().query(
+    const [result] = await connection.query(
       `INSERT INTO loans 
       (application_id, customer_id, officer_id, principal, total_interest, total_amount, disbursement_date, due_date, status, mpesa_code)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -444,7 +441,7 @@ router.post("/", validateLoanData, async (req, res) => {
 
     // Record M-Pesa transaction if applicable
     if (mpesaCode) {
-      await connection.promise().query(
+      await connection.query(
         `INSERT INTO mpesa_transactions 
         (loan_id, amount, type, mpesa_code, status, timestamp)
         VALUES (?, ?, 'disbursement', ?, 'completed', NOW())`,
@@ -480,14 +477,15 @@ router.put("/:id", validateLoanData, async (req, res) => {
     } = req.body;
 
     // Verify loan exists
-    const [existing] = await connection
-      .promise()
-      .query("SELECT id FROM loans WHERE id = ?", [id]);
+    const [existing] = await connection.query(
+      "SELECT id FROM loans WHERE id = ?",
+      [id]
+    );
     if (existing.length === 0) {
       return res.status(404).json({ error: "Loan not found" });
     }
 
-    await connection.promise().query(
+    await connection.query(
       `UPDATE loans SET 
         application_id = ?,
         customer_id = ?,
@@ -562,19 +560,19 @@ router.get("/loan-details/due-today", async (req, res) => {
     }
 
     // Get total count
-    const [countResult] = await connection
-      .promise()
-      .query(
-        `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
-        queryParams
-      );
+    const [countResult] = await connection.query(
+      `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
+      queryParams
+    );
     const total = countResult[0].total;
 
     // Add pagination
     const finalQuery = `${baseQuery} ORDER BY l.due_date ASC LIMIT ? OFFSET ?`;
-    const [loans] = await connection
-      .promise()
-      .query(finalQuery, [...queryParams, parseInt(limit), offset]);
+    const [loans] = await connection.query(finalQuery, [
+      ...queryParams,
+      parseInt(limit),
+      offset,
+    ]);
 
     res.status(200).json({
       data: loans,
@@ -629,19 +627,19 @@ router.get("/loan-details/due-tomorrow", async (req, res) => {
     }
 
     // Get total count
-    const [countResult] = await connection
-      .promise()
-      .query(
-        `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
-        queryParams
-      );
+    const [countResult] = await connection.query(
+      `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
+      queryParams
+    );
     const total = countResult[0].total;
 
     // Add pagination
     const finalQuery = `${baseQuery} ORDER BY l.due_date ASC LIMIT ? OFFSET ?`;
-    const [loans] = await connection
-      .promise()
-      .query(finalQuery, [...queryParams, parseInt(limit), offset]);
+    const [loans] = await connection.query(finalQuery, [
+      ...queryParams,
+      parseInt(limit),
+      offset,
+    ]);
 
     res.status(200).json({
       data: loans,
@@ -696,19 +694,19 @@ router.get("/loan-details/due-2-7-days", async (req, res) => {
     }
 
     // Get total count
-    const [countResult] = await connection
-      .promise()
-      .query(
-        `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
-        queryParams
-      );
+    const [countResult] = await connection.query(
+      `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
+      queryParams
+    );
     const total = countResult[0].total;
 
     // Add pagination
     const finalQuery = `${baseQuery} ORDER BY l.due_date ASC LIMIT ? OFFSET ?`;
-    const [loans] = await connection
-      .promise()
-      .query(finalQuery, [...queryParams, parseInt(limit), offset]);
+    const [loans] = await connection.query(finalQuery, [
+      ...queryParams,
+      parseInt(limit),
+      offset,
+    ]);
 
     res.status(200).json({
       data: loans,
@@ -728,7 +726,7 @@ router.get("/loan-details/due-2-7-days", async (req, res) => {
 //defaulted loans
 router.get("/loan-details/defaulted", async (req, res) => {
   try {
-    const [loans] = await connection.promise().query(`
+    const [loans] = await connection.query(`
       SELECT 
         l.id,
         CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
@@ -759,9 +757,10 @@ router.get("/loan-details/defaulted", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     // Check if loan has repayments
-    const [repayments] = await connection
-      .promise()
-      .query("SELECT id FROM repayments WHERE loan_id = ?", [req.params.id]);
+    const [repayments] = await connection.query(
+      "SELECT id FROM repayments WHERE loan_id = ?",
+      [req.params.id]
+    );
 
     if (repayments.length > 0) {
       return res.status(400).json({
@@ -770,12 +769,10 @@ router.delete("/:id", async (req, res) => {
     }
 
     // Soft delete instead of hard delete
-    await connection
-      .promise()
-      .query(
-        "UPDATE loans SET status = 'archived', deleted_at = NOW() WHERE id = ?",
-        [req.params.id]
-      );
+    await connection.query(
+      "UPDATE loans SET status = 'archived', deleted_at = NOW() WHERE id = ?",
+      [req.params.id]
+    );
 
     res.status(200).json({
       message: "Loan archived successfully",

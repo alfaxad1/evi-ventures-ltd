@@ -73,7 +73,7 @@ router.get("/", async (req, res) => {
 
     query += " ORDER BY name ASC";
 
-    const [products] = await connection.promise().query(query, params);
+    const [products] = await connection.query(query, params);
     res.status(200).json(products);
   } catch (err) {
     console.error("Error getting loan products:", err);
@@ -84,16 +84,17 @@ router.get("/", async (req, res) => {
 // Get loan product by ID with usage statistics
 router.get("/:id", async (req, res) => {
   try {
-    const [product] = await connection
-      .promise()
-      .query("SELECT * FROM loan_products WHERE id = ?", [req.params.id]);
+    const [product] = await connection.query(
+      "SELECT * FROM loan_products WHERE id = ?",
+      [req.params.id]
+    );
 
     if (product.length === 0) {
       return res.status(404).json({ error: "Loan product not found" });
     }
 
     // Get usage statistics from loan_applications instead of loans
-    const [stats] = await connection.promise().query(
+    const [stats] = await connection.query(
       `
       SELECT 
         COUNT(*) as total_applications,
@@ -131,9 +132,10 @@ router.post("/", validateLoanProduct, async (req, res) => {
     } = req.body;
 
     // Check for duplicate product name
-    const [existing] = await connection
-      .promise()
-      .query("SELECT id FROM loan_products WHERE name = ?", [name]);
+    const [existing] = await connection.query(
+      "SELECT id FROM loan_products WHERE name = ?",
+      [name]
+    );
 
     if (existing.length > 0) {
       return res
@@ -141,7 +143,7 @@ router.post("/", validateLoanProduct, async (req, res) => {
         .json({ error: "Loan product with this name already exists" });
     }
 
-    const [result] = await connection.promise().query(
+    const [result] = await connection.query(
       `INSERT INTO loan_products 
       (name, description, min_amount, max_amount, interest_rate, duration_days, processing_fee, is_active)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -183,21 +185,20 @@ router.put("/:id", validateLoanProduct, async (req, res) => {
     } = req.body;
 
     // Verify product exists
-    const [existing] = await connection
-      .promise()
-      .query("SELECT id FROM loan_products WHERE id = ?", [id]);
+    const [existing] = await connection.query(
+      "SELECT id FROM loan_products WHERE id = ?",
+      [id]
+    );
 
     if (existing.length === 0) {
       return res.status(404).json({ error: "Loan product not found" });
     }
 
     // Check for duplicate product name (excluding current product)
-    const [duplicate] = await connection
-      .promise()
-      .query("SELECT id FROM loan_products WHERE name = ? AND id != ?", [
-        name,
-        id,
-      ]);
+    const [duplicate] = await connection.query(
+      "SELECT id FROM loan_products WHERE name = ? AND id != ?",
+      [name, id]
+    );
 
     if (duplicate.length > 0) {
       return res
@@ -205,7 +206,7 @@ router.put("/:id", validateLoanProduct, async (req, res) => {
         .json({ error: "Another loan product with this name already exists" });
     }
 
-    await connection.promise().query(
+    await connection.query(
       `UPDATE loan_products SET 
         name = ?,
         description = ?,
@@ -242,12 +243,10 @@ router.put("/:id", validateLoanProduct, async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     // Check if product has active loans
-    const [activeLoans] = await connection
-      .promise()
-      .query(
-        "SELECT id FROM loans WHERE product_id = ? AND status IN ('active', 'partially_paid')",
-        [req.params.id]
-      );
+    const [activeLoans] = await connection.query(
+      "SELECT id FROM loans WHERE product_id = ? AND status IN ('active', 'partially_paid')",
+      [req.params.id]
+    );
 
     if (activeLoans.length > 0) {
       return res.status(400).json({
@@ -256,12 +255,10 @@ router.delete("/:id", async (req, res) => {
     }
 
     // Soft delete instead of hard delete
-    await connection
-      .promise()
-      .query(
-        "UPDATE loan_products SET is_active = FALSE, deleted_at = NOW() WHERE id = ?",
-        [req.params.id]
-      );
+    await connection.query(
+      "UPDATE loan_products SET is_active = FALSE, deleted_at = NOW() WHERE id = ?",
+      [req.params.id]
+    );
 
     res.status(200).json({
       message: "Loan product deactivated successfully",

@@ -38,28 +38,27 @@ const upload = multer({
 });
 
 //get all users
-router.get("/", (req, res) => {
-  const sql = "SELECT * FROM users";
-  connection.query(sql, (err, result) => {
-    if (err) return res.status(500).json({ error: "error getting users" });
+router.get("/", async (req, res) => {
+  try {
+    const [result] = await connection.query("SELECT * FROM users");
     res.status(200).json(result);
-  });
+  } catch (err) {
+    console.error("Error getting users:", err);
+    res.status(500).json({ error: "Error getting users" });
+  }
 });
 
 //get all officers
 router.get("/officers", async (req, res) => {
   try {
-    // Query to get all customers with the role of 'officer'
-    const [officers] = await connection
-      .promise()
-      .query("SELECT * FROM users WHERE role = 'officer'");
-
-    // Count the number of officers
+    const [officers] = await connection.query(
+      "SELECT * FROM users WHERE role = 'officer'"
+    );
     const count = officers.length;
 
     res.status(200).json({
-      count, // Total number of officers
-      data: officers, // List of officers
+      count,
+      data: officers,
     });
   } catch (err) {
     console.error("Error getting officers:", err);
@@ -68,43 +67,54 @@ router.get("/officers", async (req, res) => {
 });
 
 //get a user
-router.get("/:id", (req, res) => {
-  const sql = "SELECT * FROM users WHERE id = ?";
-  connection.query(sql, [req.params.id], (err, result) => {
-    if (err) return res.status(500).json({ error: "error getting user" });
+router.get("/:id", async (req, res) => {
+  try {
+    const [result] = await connection.query(
+      "SELECT * FROM users WHERE id = ?",
+      [req.params.id]
+    );
     res.status(200).json(result);
-  });
+  } catch (err) {
+    console.error("Error getting user:", err);
+    res.status(500).json({ error: "Error getting user" });
+  }
 });
 
 //update a user
-router.put("/:id", (req, res) => {
-  const sql = "UPDATE users SET ? WHERE id = ?";
-  connection.query(sql, [req.body, req.params.id], (err, result) => {
-    if (err) return res.status(500).json({ error: "error updating user" });
+router.put("/:id", async (req, res) => {
+  try {
+    const [result] = await connection.query("UPDATE users SET ? WHERE id = ?", [
+      req.body,
+      req.params.id,
+    ]);
     res
       .status(200)
       .json({ message: "User updated successfully", Status: "Success" });
-  });
+  } catch (err) {
+    console.error("Error updating user:", err);
+    res.status(500).json({ error: "Error updating user" });
+  }
 });
 
 //delete a user
-router.delete("/:id", (req, res) => {
-  const sql = "DELETE FROM users WHERE id = ?";
-  connection.query(sql, [req.params.id], (err, result) => {
-    if (err) return res.status(500).json({ error: "error deleting user" });
+router.delete("/:id", async (req, res) => {
+  try {
+    const [result] = await connection.query("DELETE FROM users WHERE id = ?", [
+      req.params.id,
+    ]);
     res
       .status(200)
       .json({ message: "User deleted successfully", Status: "Success" });
-  });
+  } catch (err) {
+    console.error("Error deleting user:", err);
+    res.status(500).json({ error: "Error deleting user" });
+  }
 });
 
 //register a user
-router.post("/register", upload.single("avatar"), (req, res) => {
-  const sql =
-    "INSERT INTO users (first_name, last_name, email, password, role, is_active, avatar) VALUES (?)";
-  bcrypt.hash(req.body.password, salt, (err, hash) => {
-    if (err) return res.status(500).json({ error: "Error hashing password" });
-
+router.post("/register", upload.single("avatar"), async (req, res) => {
+  try {
+    const hash = await bcrypt.hash(req.body.password, salt);
     const avatarPath = req.file
       ? `/uploads/avatars/${req.file.filename}`
       : null;
@@ -119,47 +129,59 @@ router.post("/register", upload.single("avatar"), (req, res) => {
       avatarPath,
     ];
 
-    connection.query(sql, [values], (err, result) => {
-      if (err) return res.status(500).json({ error: "Error registering user" });
-      res.status(200).json({
-        message: "User registered successfully",
-        Status: "Success",
-        avatar: avatarPath,
-      });
+    const sql =
+      "INSERT INTO users (first_name, last_name, email, password, role, is_active, avatar) VALUES (?)";
+    const [result] = await connection.query(sql, [values]);
+
+    res.status(200).json({
+      message: "User registered successfully",
+      Status: "Success",
+      avatar: avatarPath,
     });
-  });
+  } catch (err) {
+    console.error("Error registering user:", err);
+    res.status(500).json({ error: "Error registering user" });
+  }
 });
 
 //login a user
-router.post("/login", (req, res) => {
-  const sql = "SELECT * FROM users WHERE email = ?";
-  connection.query(sql, [req.body.email], (err, result) => {
-    if (err) return res.status(500).json({ error: "error logging in user" });
+router.post("/login", async (req, res) => {
+  try {
+    const [result] = await connection.query(
+      "SELECT * FROM users WHERE email = ?",
+      [req.body.email]
+    );
+
     if (result.length > 0) {
       if (!result[0].is_active) {
         return res.status(403).json({ error: "User account is inactive" });
       }
-      bcrypt.compare(req.body.password, result[0].password, (err, response) => {
-        if (err)
-          return res.status(500).json({ error: "error comparing password" });
-        if (response) {
-          const name = result[0].first_name + " " + result[0].last_name;
-          const email = result[0].email;
-          const id = result[0].id;
-          const role = result[0].role;
-          const token = jwt.sign({ id, role }, process.env.JWT_SECRET, {
-            expiresIn: "1h",
-          });
 
-          res.status(200).json({ token, role, name, email, id });
-        } else {
-          res.status(401).json({ error: "Invalid email or password" });
-        }
-      });
+      const isMatch = await bcrypt.compare(
+        req.body.password,
+        result[0].password
+      );
+
+      if (isMatch) {
+        const name = result[0].first_name + " " + result[0].last_name;
+        const email = result[0].email;
+        const id = result[0].id;
+        const role = result[0].role;
+        const token = jwt.sign({ id, role }, process.env.JWT_SECRET, {
+          expiresIn: "1h",
+        });
+
+        res.status(200).json({ token, role, name, email, id });
+      } else {
+        res.status(401).json({ error: "Invalid email or password" });
+      }
     } else {
       res.status(401).json({ error: "Invalid email or password" });
     }
-  });
+  } catch (err) {
+    console.error("Error logging in user:", err);
+    res.status(500).json({ error: "Error logging in user" });
+  }
 });
 
 export default router;

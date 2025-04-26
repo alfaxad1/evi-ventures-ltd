@@ -64,7 +64,7 @@ router.get("/pending", async (req, res) => {
       queryParams.push(officerId);
     }
 
-    const [results] = await connection.promise().query(sql, queryParams);
+    const [results] = await connection.query(sql, queryParams);
 
     // Count the number of pending repayments
     const count = results.length;
@@ -102,7 +102,7 @@ router.get("/approved", async (req, res) => {
       queryParams.push(officerId);
     }
 
-    const [results] = await connection.promise().query(sql, queryParams);
+    const [results] = await connection.query(sql, queryParams);
 
     // Count the number of approved repayments
     const count = results.length;
@@ -129,7 +129,7 @@ router.get("/:id", async (req, res) => {
       JOIN loan_products lp ON l.loan_product_id = lp.id
       WHERE r.id = ?
     `;
-    const [results] = await connection.promise().query(sql, [req.params.id]);
+    const [results] = await connection.query(sql, [req.params.id]);
 
     if (results.length === 0) {
       return res.status(404).json({ error: "Repayment not found" });
@@ -147,11 +147,11 @@ router.post("/", validateRepaymentData, async (req, res) => {
   const { loanId, amount, mpesaCode } = req.body;
 
   try {
-    await connection.promise().beginTransaction();
+    await connection.beginTransaction();
 
     // Get loan details
     const [loan] = await connection
-      .promise()
+      
       .query("SELECT * FROM loans WHERE id = ?", [loanId]);
 
     if (loan.length === 0) {
@@ -184,7 +184,7 @@ router.post("/", validateRepaymentData, async (req, res) => {
     }
 
     // Update loan record
-    await connection.promise().query(
+    await connection.query(
       `UPDATE loans 
       SET arrears = ?, due_date = ? 
       WHERE id = ?`,
@@ -192,16 +192,16 @@ router.post("/", validateRepaymentData, async (req, res) => {
     );
 
     // Record repayment
-    await connection.promise().query(
+    await connection.query(
       `INSERT INTO repayments (loan_id, amount, due_date, paid_date, status, mpesa_code, created_by, created_at) 
       VALUES (?, ?, ?, NOW(), 'pending', ?, ?, NOW())`,
       [loanId, amount, nextDueDate, mpesaCode, officer_id]
     );
 
-    await connection.promise().commit();
+    await connection.commit();
     res.status(200).json({ message: "Repayment recorded successfully" });
   } catch (err) {
-    await connection.promise().rollback();
+    await connection.rollback();
     console.error("Error recording repayment:", err);
     res.status(500).json({ error: "Failed to record repayment" });
   }
@@ -214,15 +214,15 @@ router.put("/:id", validateRepaymentData, async (req, res) => {
     req.body;
 
   try {
-    await connection.promise().beginTransaction();
+    await connection.beginTransaction();
 
     // 1. Get current repayment data
     const [currentRepayment] = await connection
-      .promise()
+      
       .query("SELECT * FROM repayments WHERE id = ?", [id]);
 
     if (currentRepayment.length === 0) {
-      await connection.promise().rollback();
+      await connection.rollback();
       return res.status(404).json({ error: "Repayment not found" });
     }
 
@@ -232,7 +232,7 @@ router.put("/:id", validateRepaymentData, async (req, res) => {
       SET status = ?, paid_date = NOW() 
       WHERE id = ?
     `;
-    await connection.promise().query(updateSql, [status, id]);
+    await connection.query(updateSql, [status, id]);
 
     // 3. Handle loan updates
     if (status === "paid") {
@@ -244,7 +244,7 @@ router.put("/:id", validateRepaymentData, async (req, res) => {
           VALUES (?, ?, ?, 'repayment', ?, 'completed', ?, NOW())
         `;
         await connection
-          .promise()
+          
           .query(mpesaSql, [
             customerId,
             loanId,
@@ -258,13 +258,13 @@ router.put("/:id", validateRepaymentData, async (req, res) => {
       await updateLoanStatus(loanId, connection);
     }
 
-    await connection.promise().commit();
+    await connection.commit();
 
     res.status(200).json({
       message: "Repayment updated successfully",
     });
   } catch (err) {
-    await connection.promise().rollback();
+    await connection.rollback();
     console.error("Error updating repayment:", err);
     res.status(500).json({ error: "Error updating repayment" });
   }
@@ -273,17 +273,17 @@ router.put("/:id", validateRepaymentData, async (req, res) => {
 // Delete a repayment (with loan status recalculation)
 router.delete("/:id", async (req, res) => {
   try {
-    await connection.promise().beginTransaction();
+    await connection.beginTransaction();
 
     // 1. Get repayment data before deletion
     const [repayment] = await connection
-      .promise()
+      
       .query("SELECT loan_id, status FROM repayments WHERE id = ?", [
         req.params.id,
       ]);
 
     if (repayment.length === 0) {
-      await connection.promise().rollback();
+      await connection.rollback();
       return res.status(404).json({ error: "Repayment not found" });
     }
 
@@ -292,7 +292,7 @@ router.delete("/:id", async (req, res) => {
 
     // 2. Delete the repayment
     await connection
-      .promise()
+      
       .query("DELETE FROM repayments WHERE id = ?", [req.params.id]);
 
     // 3. Recalculate loan status if deleted repayment was paid
@@ -300,13 +300,13 @@ router.delete("/:id", async (req, res) => {
       await updateLoanStatus(loanId, connection);
     }
 
-    await connection.promise().commit();
+    await connection.commit();
 
     res.status(200).json({
       message: "Repayment deleted successfully",
     });
   } catch (err) {
-    await connection.promise().rollback();
+    await connection.rollback();
     console.error("Error deleting repayment:", err);
     res.status(500).json({ error: "Error deleting repayment" });
   }

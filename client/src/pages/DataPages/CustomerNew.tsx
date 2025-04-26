@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios, { AxiosError } from "axios";
+import { toast, ToastContainer } from "react-toastify";
 
 // Type definitions
 type Collateral = {
@@ -58,6 +59,45 @@ type CustomerFormData = {
 };
 
 const CustomerNew: React.FC = () => {
+  const initialFormData: CustomerFormData = {
+    first_name: "",
+    middle_name: "",
+    last_name: "",
+    phone: "",
+    national_id: "",
+    date_of_birth: "",
+    gender: "",
+    address: "",
+    county: "",
+    occupation: "",
+    business_name: "",
+    business_location: "",
+    residence_details: "",
+    monthly_income: "",
+    credit_score: "",
+    created_by: 1,
+    national_id_photo: null,
+    passport_photo: null,
+    collaterals: [{ item_name: "", item_count: 1, additional_details: "" }],
+    referees: [{ name: "", id_number: "", phone_number: "", relationship: "" }],
+    guarantors: [
+      {
+        name: "",
+        id_number: "",
+        phone_number: "",
+        relationship: "",
+        business_location: "",
+        residence_details: "",
+        id_photo: null,
+        pass_photo: null,
+        collaterals: [{ item_name: "", item_count: 1, additional_details: "" }],
+      },
+    ],
+  };
+  const resetForm = () => {
+    setFormData(initialFormData);
+  };
+
   const [formData, setFormData] = useState<CustomerFormData>({
     first_name: "",
     middle_name: "",
@@ -352,633 +392,636 @@ const CustomerNew: React.FC = () => {
         }
       );
 
-      alert("Customer created successfully!");
+      toast.success(response.data.message);
       console.log("Response:", response.data);
-      // Reset form or redirect as needed
+      resetForm();
     } catch (error) {
       const axiosError = error as AxiosError;
-      console.error(
-        "Error submitting form:",
-        axiosError.response?.data || axiosError.message
-      );
-      //alert("Failed to create customer. Please try again.");
+      const errmsg = axiosError.response?.data || axiosError.message;
+      console.log(errmsg);
+      toast.error("Error registering");
     }
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">New Customer Registration</h1>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Personal Information Section */}
-        <section className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Personal Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">
-                First Name*
-              </label>
-              <input
-                type="text"
-                name="first_name"
-                value={formData.first_name}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">
-                Middle Name
-              </label>
-              <input
-                type="text"
-                name="middle_name"
-                value={formData.middle_name}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">
-                Last Name*
-              </label>
-              <input
-                type="text"
-                name="last_name"
-                value={formData.last_name}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">
-                Phone Number*
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">
-                National ID*
-              </label>
-              <input
-                type="text"
-                name="national_id"
-                value={formData.national_id}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">
-                Date of Birth*
-              </label>
-              <input
-                type="date"
-                name="date_of_birth"
-                value={formData.date_of_birth}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">
-                Gender*
-              </label>
-              <select
-                name="gender"
-                value={formData.gender}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">
-                Address*
-              </label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">
-                County*
-              </label>
-              <input
-                type="text"
-                name="county"
-                value={formData.county}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">
-                Occupation*
-              </label>
-              <input
-                type="text"
-                name="occupation"
-                value={formData.occupation}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">
-                Business Name
-              </label>
-              <input
-                type="text"
-                name="business_name"
-                value={formData.business_name}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">
-                Business Location
-              </label>
-              <input
-                type="text"
-                name="business_location"
-                value={formData.business_location}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">
-                Residence Details
-              </label>
-              <textarea
-                name="residence_details"
-                value={formData.residence_details}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">
-                Monthly Income*
-              </label>
-              <input
-                type="number"
-                name="monthly_income"
-                value={formData.monthly_income}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">
-                Credit Score
-              </label>
-              <input
-                type="number"
-                name="credit_score"
-                value={formData.credit_score}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">
-                National ID Photo*
-              </label>
-              <input
-                type="file"
-                name="national_id_photo"
-                onChange={handleFileChange}
-                accept="image/*"
-                //required
-                className="mt-1 block w-full text-sm text-gray-500
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded-md file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-indigo-50 file:text-indigo-700
-                  hover:file:bg-indigo-100"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">
-                Passport Photo
-              </label>
-              <input
-                type="file"
-                name="passport_photo"
-                onChange={handleFileChange}
-                accept="image/*"
-                className="mt-1 block w-full text-sm text-gray-500
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded-md file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-indigo-50 file:text-indigo-700
-                  hover:file:bg-indigo-100"
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Collaterals Section */}
-        <section className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Customer Collaterals</h2>
-          {formData.collaterals.map((collateral, index) => (
-            <div key={index} className="mb-4 p-4 border rounded">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Item Name
-                  </label>
-                  <input
-                    type="text"
-                    name="item_name"
-                    value={collateral.item_name}
-                    onChange={(e) => handleCollateralChange(index, e)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Item Count
-                  </label>
-                  <input
-                    type="number"
-                    name="item_count"
-                    value={collateral.item_count}
-                    onChange={(e) => handleCollateralChange(index, e)}
-                    min="1"
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-              <div className="form-group mt-4">
+    <>
+      <ToastContainer position="bottom-right" />
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-6">New Customer Registration</h1>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Personal Information Section */}
+          <section className="bg-white p-6 rounded-lg shadow">
+            <h2 className="text-xl font-semibold mb-4">Personal Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="form-group">
                 <label className="block text-sm font-medium text-gray-700">
-                  Additional Details
+                  First Name*
                 </label>
-                <textarea
-                  name="additional_details"
-                  value={collateral.additional_details}
-                  onChange={(e) => handleCollateralChange(index, e)}
+                <input
+                  type="text"
+                  name="first_name"
+                  value={formData.first_name}
+                  onChange={handleChange}
+                  required
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
-              <button
-                type="button"
-                onClick={() => removeCollateral(index)}
-                className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                Remove Collateral
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={addCollateral}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Add Collateral
-          </button>
-        </section>
 
-        {/* Referees Section */}
-        <section className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Referees</h2>
-          {formData.referees.map((referee, index) => (
-            <div key={index} className="mb-4 p-4 border rounded">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Name*
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={referee.name}
-                    onChange={(e) => handleRefereeChange(index, e)}
-                    required
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700">
-                    ID Number*
-                  </label>
-                  <input
-                    type="text"
-                    name="id_number"
-                    value={referee.id_number}
-                    onChange={(e) => handleRefereeChange(index, e)}
-                    required
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Phone Number*
-                  </label>
-                  <input
-                    type="tel"
-                    name="phone_number"
-                    value={referee.phone_number}
-                    onChange={(e) => handleRefereeChange(index, e)}
-                    required
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Relationship*
-                  </label>
-                  <input
-                    type="text"
-                    name="relationship"
-                    value={referee.relationship}
-                    onChange={(e) => handleRefereeChange(index, e)}
-                    required
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
+              <div className="form-group">
+                <label className="block text-sm font-medium text-gray-700">
+                  Middle Name
+                </label>
+                <input
+                  type="text"
+                  name="middle_name"
+                  value={formData.middle_name}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
               </div>
-              <button
-                type="button"
-                onClick={() => removeReferee(index)}
-                className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                Remove Referee
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={addReferee}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Add Referee
-          </button>
-        </section>
 
-        {/* Guarantors Section */}
-        <section className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Guarantors</h2>
-          {formData.guarantors.map((guarantor, gIndex) => (
-            <div key={gIndex} className="mb-6 p-4 border rounded">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Name*
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={guarantor.name}
-                    onChange={(e) => handleGuarantorChange(gIndex, e)}
-                    required
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  />
+              <div className="form-group">
+                <label className="block text-sm font-medium text-gray-700">
+                  Last Name*
+                </label>
+                <input
+                  type="text"
+                  name="last_name"
+                  value={formData.last_name}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="block text-sm font-medium text-gray-700">
+                  Phone Number*
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="block text-sm font-medium text-gray-700">
+                  National ID*
+                </label>
+                <input
+                  type="text"
+                  name="national_id"
+                  value={formData.national_id}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="block text-sm font-medium text-gray-700">
+                  Date of Birth*
+                </label>
+                <input
+                  type="date"
+                  name="date_of_birth"
+                  value={formData.date_of_birth}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="block text-sm font-medium text-gray-700">
+                  Gender*
+                </label>
+                <select
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="block text-sm font-medium text-gray-700">
+                  Address*
+                </label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="block text-sm font-medium text-gray-700">
+                  County*
+                </label>
+                <input
+                  type="text"
+                  name="county"
+                  value={formData.county}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="block text-sm font-medium text-gray-700">
+                  Occupation*
+                </label>
+                <input
+                  type="text"
+                  name="occupation"
+                  value={formData.occupation}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="block text-sm font-medium text-gray-700">
+                  Business Name
+                </label>
+                <input
+                  type="text"
+                  name="business_name"
+                  value={formData.business_name}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="block text-sm font-medium text-gray-700">
+                  Business Location
+                </label>
+                <input
+                  type="text"
+                  name="business_location"
+                  value={formData.business_location}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="block text-sm font-medium text-gray-700">
+                  Residence Details
+                </label>
+                <textarea
+                  name="residence_details"
+                  value={formData.residence_details}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="block text-sm font-medium text-gray-700">
+                  Monthly Income*
+                </label>
+                <input
+                  type="number"
+                  name="monthly_income"
+                  value={formData.monthly_income}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="block text-sm font-medium text-gray-700">
+                  Credit Score
+                </label>
+                <input
+                  type="number"
+                  name="credit_score"
+                  value={formData.credit_score}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="block text-sm font-medium text-gray-700">
+                  National ID Photo*
+                </label>
+                <input
+                  type="file"
+                  name="national_id_photo"
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  //required
+                  className="mt-1 block w-full text-sm text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-md file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-indigo-50 file:text-indigo-700
+                  hover:file:bg-indigo-100"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="block text-sm font-medium text-gray-700">
+                  Passport Photo
+                </label>
+                <input
+                  type="file"
+                  name="passport_photo"
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  className="mt-1 block w-full text-sm text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-md file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-indigo-50 file:text-indigo-700
+                  hover:file:bg-indigo-100"
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Collaterals Section */}
+          <section className="bg-white p-6 rounded-lg shadow">
+            <h2 className="text-xl font-semibold mb-4">Customer Collaterals</h2>
+            {formData.collaterals.map((collateral, index) => (
+              <div key={index} className="mb-4 p-4 border rounded">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="form-group">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Item Name
+                    </label>
+                    <input
+                      type="text"
+                      name="item_name"
+                      value={collateral.item_name}
+                      onChange={(e) => handleCollateralChange(index, e)}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Item Count
+                    </label>
+                    <input
+                      type="number"
+                      name="item_count"
+                      value={collateral.item_count}
+                      onChange={(e) => handleCollateralChange(index, e)}
+                      min="1"
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
                 </div>
-                <div className="form-group">
+                <div className="form-group mt-4">
                   <label className="block text-sm font-medium text-gray-700">
-                    ID Number*
-                  </label>
-                  <input
-                    type="text"
-                    name="id_number"
-                    value={guarantor.id_number}
-                    onChange={(e) => handleGuarantorChange(gIndex, e)}
-                    required
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Phone Number*
-                  </label>
-                  <input
-                    type="tel"
-                    name="phone_number"
-                    value={guarantor.phone_number}
-                    onChange={(e) => handleGuarantorChange(gIndex, e)}
-                    required
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Relationship*
-                  </label>
-                  <input
-                    type="text"
-                    name="relationship"
-                    value={guarantor.relationship}
-                    onChange={(e) => handleGuarantorChange(gIndex, e)}
-                    required
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Business Location
-                  </label>
-                  <input
-                    type="text"
-                    name="business_location"
-                    value={guarantor.business_location}
-                    onChange={(e) => handleGuarantorChange(gIndex, e)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Residence Details
+                    Additional Details
                   </label>
                   <textarea
-                    name="residence_details"
-                    value={guarantor.residence_details}
-                    onChange={(e) => handleGuarantorChange(gIndex, e)}
+                    name="additional_details"
+                    value={collateral.additional_details}
+                    onChange={(e) => handleCollateralChange(index, e)}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700">
-                    National ID Photo*
-                  </label>
-                  <input
-                    type="file"
-                    name="id_photo"
-                    onChange={(e) => handleGuarantorFileChange(gIndex, e)}
-                    accept="image/*"
-                    required
-                    className="mt-1 block w-full text-sm text-gray-500
-                      file:mr-4 file:py-2 file:px-4
-                      file:rounded-md file:border-0
-                      file:text-sm file:font-semibold
-                      file:bg-indigo-50 file:text-indigo-700
-                      hover:file:bg-indigo-100"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Passport Photo
-                  </label>
-                  <input
-                    type="file"
-                    name="pass_photo"
-                    onChange={(e) => handleGuarantorFileChange(gIndex, e)}
-                    accept="image/*"
-                    className="mt-1 block w-full text-sm text-gray-500
-                      file:mr-4 file:py-2 file:px-4
-                      file:rounded-md file:border-0
-                      file:text-sm file:font-semibold
-                      file:bg-indigo-50 file:text-indigo-700
-                      hover:file:bg-indigo-100"
-                  />
-                </div>
-              </div>
-
-              {/* Guarantor Collaterals */}
-              <div className="mt-6">
-                <h3 className="text-lg font-medium mb-3">
-                  Guarantor Collaterals
-                </h3>
-                {guarantor.collaterals.map((collateral, cIndex) => (
-                  <div
-                    key={cIndex}
-                    className="mb-4 p-4 border rounded bg-gray-50"
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="form-group">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Item Name
-                        </label>
-                        <input
-                          type="text"
-                          name="item_name"
-                          value={collateral.item_name}
-                          onChange={(e) =>
-                            handleGuarantorCollateralChange(gIndex, cIndex, e)
-                          }
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Item Count
-                        </label>
-                        <input
-                          type="number"
-                          name="item_count"
-                          value={collateral.item_count}
-                          onChange={(e) =>
-                            handleGuarantorCollateralChange(gIndex, cIndex, e)
-                          }
-                          min="1"
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                        />
-                      </div>
-                    </div>
-                    <div className="form-group mt-4">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Additional Details
-                      </label>
-                      <textarea
-                        name="additional_details"
-                        value={collateral.additional_details}
-                        onChange={(e) =>
-                          handleGuarantorCollateralChange(gIndex, cIndex, e)
-                        }
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeGuarantorCollateral(gIndex, cIndex)}
-                      className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                    >
-                      Remove Collateral
-                    </button>
-                  </div>
-                ))}
                 <button
                   type="button"
-                  onClick={() => addGuarantorCollateral(gIndex)}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  onClick={() => removeCollateral(index)}
+                  className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                 >
-                  Add Guarantor Collateral
+                  Remove Collateral
                 </button>
               </div>
+            ))}
+            <button
+              type="button"
+              onClick={addCollateral}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Add Collateral
+            </button>
+          </section>
 
-              <button
-                type="button"
-                onClick={() => removeGuarantor(gIndex)}
-                className="mt-4 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                Remove Guarantor
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={addGuarantor}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Add Guarantor
-          </button>
-        </section>
+          {/* Referees Section */}
+          <section className="bg-white p-6 rounded-lg shadow">
+            <h2 className="text-xl font-semibold mb-4">Referees</h2>
+            {formData.referees.map((referee, index) => (
+              <div key={index} className="mb-4 p-4 border rounded">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="form-group">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Name*
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={referee.name}
+                      onChange={(e) => handleRefereeChange(index, e)}
+                      required
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="block text-sm font-medium text-gray-700">
+                      ID Number*
+                    </label>
+                    <input
+                      type="text"
+                      name="id_number"
+                      value={referee.id_number}
+                      onChange={(e) => handleRefereeChange(index, e)}
+                      required
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Phone Number*
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone_number"
+                      value={referee.phone_number}
+                      onChange={(e) => handleRefereeChange(index, e)}
+                      required
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Relationship*
+                    </label>
+                    <input
+                      type="text"
+                      name="relationship"
+                      value={referee.relationship}
+                      onChange={(e) => handleRefereeChange(index, e)}
+                      required
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeReferee(index)}
+                  className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  Remove Referee
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addReferee}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Add Referee
+            </button>
+          </section>
 
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Submit Application
-          </button>
-        </div>
-      </form>
-    </div>
+          {/* Guarantors Section */}
+          <section className="bg-white p-6 rounded-lg shadow">
+            <h2 className="text-xl font-semibold mb-4">Guarantors</h2>
+            {formData.guarantors.map((guarantor, gIndex) => (
+              <div key={gIndex} className="mb-6 p-4 border rounded">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="form-group">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Name*
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={guarantor.name}
+                      onChange={(e) => handleGuarantorChange(gIndex, e)}
+                      required
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="block text-sm font-medium text-gray-700">
+                      ID Number*
+                    </label>
+                    <input
+                      type="text"
+                      name="id_number"
+                      value={guarantor.id_number}
+                      onChange={(e) => handleGuarantorChange(gIndex, e)}
+                      required
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Phone Number*
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone_number"
+                      value={guarantor.phone_number}
+                      onChange={(e) => handleGuarantorChange(gIndex, e)}
+                      required
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Relationship*
+                    </label>
+                    <input
+                      type="text"
+                      name="relationship"
+                      value={guarantor.relationship}
+                      onChange={(e) => handleGuarantorChange(gIndex, e)}
+                      required
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Business Location
+                    </label>
+                    <input
+                      type="text"
+                      name="business_location"
+                      value={guarantor.business_location}
+                      onChange={(e) => handleGuarantorChange(gIndex, e)}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Residence Details
+                    </label>
+                    <textarea
+                      name="residence_details"
+                      value={guarantor.residence_details}
+                      onChange={(e) => handleGuarantorChange(gIndex, e)}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div className="form-group">
+                    <label className="block text-sm font-medium text-gray-700">
+                      National ID Photo*
+                    </label>
+                    <input
+                      type="file"
+                      name="id_photo"
+                      onChange={(e) => handleGuarantorFileChange(gIndex, e)}
+                      accept="image/*"
+                      required
+                      className="mt-1 block w-full text-sm text-gray-500
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-md file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-indigo-50 file:text-indigo-700
+                      hover:file:bg-indigo-100"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Passport Photo
+                    </label>
+                    <input
+                      type="file"
+                      name="pass_photo"
+                      onChange={(e) => handleGuarantorFileChange(gIndex, e)}
+                      accept="image/*"
+                      className="mt-1 block w-full text-sm text-gray-500
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-md file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-indigo-50 file:text-indigo-700
+                      hover:file:bg-indigo-100"
+                    />
+                  </div>
+                </div>
+
+                {/* Guarantor Collaterals */}
+                <div className="mt-6">
+                  <h3 className="text-lg font-medium mb-3">
+                    Guarantor Collaterals
+                  </h3>
+                  {guarantor.collaterals.map((collateral, cIndex) => (
+                    <div
+                      key={cIndex}
+                      className="mb-4 p-4 border rounded bg-gray-50"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="form-group">
+                          <label className="block text-sm font-medium text-gray-700">
+                            Item Name
+                          </label>
+                          <input
+                            type="text"
+                            name="item_name"
+                            value={collateral.item_name}
+                            onChange={(e) =>
+                              handleGuarantorCollateralChange(gIndex, cIndex, e)
+                            }
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label className="block text-sm font-medium text-gray-700">
+                            Item Count
+                          </label>
+                          <input
+                            type="number"
+                            name="item_count"
+                            value={collateral.item_count}
+                            onChange={(e) =>
+                              handleGuarantorCollateralChange(gIndex, cIndex, e)
+                            }
+                            min="1"
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                          />
+                        </div>
+                      </div>
+                      <div className="form-group mt-4">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Additional Details
+                        </label>
+                        <textarea
+                          name="additional_details"
+                          value={collateral.additional_details}
+                          onChange={(e) =>
+                            handleGuarantorCollateralChange(gIndex, cIndex, e)
+                          }
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          removeGuarantorCollateral(gIndex, cIndex)
+                        }
+                        className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                      >
+                        Remove Collateral
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => addGuarantorCollateral(gIndex)}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    Add Guarantor Collateral
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => removeGuarantor(gIndex)}
+                  className="mt-4 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  Remove Guarantor
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addGuarantor}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Add Guarantor
+            </button>
+          </section>
+
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Submit Application
+            </button>
+          </div>
+        </form>
+      </div>
+    </>
   );
 };
 
