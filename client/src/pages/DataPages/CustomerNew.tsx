@@ -59,6 +59,7 @@ type CustomerFormData = {
 };
 
 const CustomerNew: React.FC = () => {
+  const userId = localStorage.getItem("userId");
   const initialFormData: CustomerFormData = {
     first_name: "",
     middle_name: "",
@@ -75,7 +76,7 @@ const CustomerNew: React.FC = () => {
     residence_details: "",
     monthly_income: "",
     credit_score: "",
-    created_by: 1,
+    created_by: 0,
     national_id_photo: null,
     passport_photo: null,
     collaterals: [{ item_name: "", item_count: 1, additional_details: "" }],
@@ -114,7 +115,7 @@ const CustomerNew: React.FC = () => {
     residence_details: "",
     monthly_income: "",
     credit_score: "",
-    created_by: 1,
+    created_by: userId ? parseInt(userId) : 1,
     national_id_photo: null,
     passport_photo: null,
     collaterals: [{ item_name: "", item_count: 1, additional_details: "" }],

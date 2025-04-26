@@ -97,9 +97,7 @@ const Due2To7 = () => {
           ) : error ? (
             <div className="text-red-500 text-center py-4">{error}</div>
           ) : dueLoans && dueLoans.length === 0 ? (
-            <div className="text-center py-4 text-gray-500">
-              No loans are due today.
-            </div>
+            <div className="text-center py-4 text-gray-500">No loans.</div>
           ) : (
             <Table>
               {/* Table Header */}

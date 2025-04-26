@@ -18,7 +18,6 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import Customers from "./pages/DataPages/Customers";
 import Loans from "./pages/DataPages/Loans";
-import CustomersForm from "./pages/DataPages/CustomersForm";
 import PendingLoans from "./pages/DataPages/PendingLoans";
 import RejectedLoans from "./pages/DataPages/RejectedLoans";
 import LoanApplication from "./pages/DataPages/LoanApplication";
@@ -65,7 +64,7 @@ export default function App() {
             {/* Data pages */}
             <Route path="/customers" element={<Customers />} />
             <Route path="/loans" element={<Loans />} />
-            <Route path="/register-customer" element={<CustomersForm />} />
+
             <Route path="/pending-loans" element={<PendingLoans />} />
             <Route path="/rejected-loans" element={<RejectedLoans />} />
             <Route path="/loan-application" element={<LoanApplication />} />
@@ -79,7 +78,7 @@ export default function App() {
             />
             <Route path="/add-product" element={<AddLoanProduct />} />
             <Route path="/loan-products" element={<LoanProducts />} />
-            <Route path="/customer-new" element={<CustomerNew />} />
+            <Route path="/register-customer" element={<CustomerNew />} />
             <Route path="/paid-loans" element={<PaidLoans />} />
             <Route
               path="/pending-disbursement"
