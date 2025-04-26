@@ -74,19 +74,19 @@ router.get("/", async (req, res) => {
     }
 
     // Get total count
-    const [countResult] = await connection
-      
-      .query(
-        `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
-        queryParams
-      );
+    const [countResult] = await connection.query(
+      `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
+      queryParams
+    );
     const total = countResult[0].total;
 
     // Add pagination and sorting
     const finalQuery = `${baseQuery} ORDER BY l.disbursement_date DESC LIMIT ? OFFSET ?`;
-    const [loans] = await connection
-      
-      .query(finalQuery, [...queryParams, parseInt(limit), offset]);
+    const [loans] = await connection.query(finalQuery, [
+      ...queryParams,
+      parseInt(limit),
+      offset,
+    ]);
 
     res.status(200).json({
       data: loans,
@@ -106,7 +106,8 @@ router.get("/", async (req, res) => {
 // Get detailed loan information
 router.get("/loan-details", async (req, res) => {
   try {
-    const { officerId, role } = req.query; // Get officerId and role from query parameters
+    const { officerId, role, page = 1, limit = 10 } = req.query; // Get officerId, role, page, and limit from query parameters
+    const offset = (page - 1) * limit;
 
     let baseQuery = `
       SELECT 
@@ -149,11 +150,30 @@ router.get("/loan-details", async (req, res) => {
       baseQuery += ` WHERE ${whereClauses.join(" AND ")}`;
     }
 
-    baseQuery += " ORDER BY l.disbursement_date DESC";
+    // Get total count
+    const [countResult] = await connection.query(
+      `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
+      queryParams
+    );
+    const total = countResult[0].total;
 
-    const [loans] = await connection.query(baseQuery, queryParams);
+    // Add pagination and sorting
+    const finalQuery = `${baseQuery} ORDER BY l.disbursement_date DESC LIMIT ? OFFSET ?`;
+    const [loans] = await connection.query(finalQuery, [
+      ...queryParams,
+      parseInt(limit),
+      offset,
+    ]);
 
-    res.status(200).json(loans);
+    res.status(200).json({
+      data: loans,
+      meta: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (err) {
     console.error("Error fetching loan details:", err);
     res.status(500).json({ error: "Failed to retrieve loan details" });
@@ -279,12 +299,10 @@ router.put("/disburse/:loanId", authorizeRoles(["admin"]), async (req, res) => {
     await connection.beginTransaction();
 
     // 1. Fetch the customer_id and total_amount associated with the loan
-    const [loan] = await connection
-      
-      .query(
-        "SELECT customer_id, total_amount, officer_id FROM loans WHERE id = ? AND status = 'pending_disbursement'",
-        [req.params.loanId]
-      );
+    const [loan] = await connection.query(
+      "SELECT customer_id, total_amount, officer_id FROM loans WHERE id = ? AND status = 'pending_disbursement'",
+      [req.params.loanId]
+    );
 
     if (loan.length === 0) {
       await connection.rollback();
@@ -300,12 +318,10 @@ router.put("/disburse/:loanId", authorizeRoles(["admin"]), async (req, res) => {
     } = loan[0];
 
     // 2. Update loan status to active
-    const [updateResult] = await connection
-      
-      .query(
-        "UPDATE loans SET status = 'active', disbursement_date = NOW(), mpesa_code = ? WHERE id = ? AND status = 'pending_disbursement'",
-        [mpesaCode, req.params.loanId]
-      );
+    const [updateResult] = await connection.query(
+      "UPDATE loans SET status = 'active', disbursement_date = NOW(), mpesa_code = ? WHERE id = ? AND status = 'pending_disbursement'",
+      [mpesaCode, req.params.loanId]
+    );
 
     if (updateResult.affectedRows === 0) {
       await connection.rollback();
@@ -397,27 +413,28 @@ router.post("/", validateLoanData, async (req, res) => {
     } = req.body;
 
     // Verify application exists
-    const [application] = await connection
-      
-      .query("SELECT id FROM loan_applications WHERE id = ?", [applicationId]);
+    const [application] = await connection.query(
+      "SELECT id FROM loan_applications WHERE id = ?",
+      [applicationId]
+    );
     if (application.length === 0) {
       return res.status(404).json({ error: "Loan application not found" });
     }
 
     // Verify customer exists
-    const [customer] = await connection
-      
-      .query("SELECT id FROM customers WHERE id = ?", [customerId]);
+    const [customer] = await connection.query(
+      "SELECT id FROM customers WHERE id = ?",
+      [customerId]
+    );
     if (customer.length === 0) {
       return res.status(404).json({ error: "Customer not found" });
     }
 
     // Verify officer exists
-    const [officer] = await connection
-      
-      .query("SELECT id FROM users WHERE id = ? AND role = 'officer'", [
-        officerId,
-      ]);
+    const [officer] = await connection.query(
+      "SELECT id FROM users WHERE id = ? AND role = 'officer'",
+      [officerId]
+    );
     if (officer.length === 0) {
       return res.status(404).json({ error: "Loan officer not found" });
     }
@@ -480,9 +497,10 @@ router.put("/:id", validateLoanData, async (req, res) => {
     } = req.body;
 
     // Verify loan exists
-    const [existing] = await connection
-      
-      .query("SELECT id FROM loans WHERE id = ?", [id]);
+    const [existing] = await connection.query(
+      "SELECT id FROM loans WHERE id = ?",
+      [id]
+    );
     if (existing.length === 0) {
       return res.status(404).json({ error: "Loan not found" });
     }
@@ -562,19 +580,19 @@ router.get("/loan-details/due-today", async (req, res) => {
     }
 
     // Get total count
-    const [countResult] = await connection
-      
-      .query(
-        `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
-        queryParams
-      );
+    const [countResult] = await connection.query(
+      `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
+      queryParams
+    );
     const total = countResult[0].total;
 
     // Add pagination
     const finalQuery = `${baseQuery} ORDER BY l.due_date ASC LIMIT ? OFFSET ?`;
-    const [loans] = await connection
-      
-      .query(finalQuery, [...queryParams, parseInt(limit), offset]);
+    const [loans] = await connection.query(finalQuery, [
+      ...queryParams,
+      parseInt(limit),
+      offset,
+    ]);
 
     res.status(200).json({
       data: loans,
@@ -629,19 +647,19 @@ router.get("/loan-details/due-tomorrow", async (req, res) => {
     }
 
     // Get total count
-    const [countResult] = await connection
-      
-      .query(
-        `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
-        queryParams
-      );
+    const [countResult] = await connection.query(
+      `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
+      queryParams
+    );
     const total = countResult[0].total;
 
     // Add pagination
     const finalQuery = `${baseQuery} ORDER BY l.due_date ASC LIMIT ? OFFSET ?`;
-    const [loans] = await connection
-      
-      .query(finalQuery, [...queryParams, parseInt(limit), offset]);
+    const [loans] = await connection.query(finalQuery, [
+      ...queryParams,
+      parseInt(limit),
+      offset,
+    ]);
 
     res.status(200).json({
       data: loans,
@@ -696,19 +714,19 @@ router.get("/loan-details/due-2-7-days", async (req, res) => {
     }
 
     // Get total count
-    const [countResult] = await connection
-      
-      .query(
-        `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
-        queryParams
-      );
+    const [countResult] = await connection.query(
+      `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
+      queryParams
+    );
     const total = countResult[0].total;
 
     // Add pagination
     const finalQuery = `${baseQuery} ORDER BY l.due_date ASC LIMIT ? OFFSET ?`;
-    const [loans] = await connection
-      
-      .query(finalQuery, [...queryParams, parseInt(limit), offset]);
+    const [loans] = await connection.query(finalQuery, [
+      ...queryParams,
+      parseInt(limit),
+      offset,
+    ]);
 
     res.status(200).json({
       data: loans,
@@ -759,9 +777,10 @@ router.get("/loan-details/defaulted", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     // Check if loan has repayments
-    const [repayments] = await connection
-      
-      .query("SELECT id FROM repayments WHERE loan_id = ?", [req.params.id]);
+    const [repayments] = await connection.query(
+      "SELECT id FROM repayments WHERE loan_id = ?",
+      [req.params.id]
+    );
 
     if (repayments.length > 0) {
       return res.status(400).json({
@@ -770,12 +789,10 @@ router.delete("/:id", async (req, res) => {
     }
 
     // Soft delete instead of hard delete
-    await connection
-      
-      .query(
-        "UPDATE loans SET status = 'archived', deleted_at = NOW() WHERE id = ?",
-        [req.params.id]
-      );
+    await connection.query(
+      "UPDATE loans SET status = 'archived', deleted_at = NOW() WHERE id = ?",
+      [req.params.id]
+    );
 
     res.status(200).json({
       message: "Loan archived successfully",

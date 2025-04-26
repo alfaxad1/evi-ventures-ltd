@@ -25,6 +25,44 @@ interface Customer {
   occupation: string;
 }
 
+// Define the structure of a referee
+interface Referee {
+  name: string;
+  relationship: string;
+  phone_number: string;
+}
+
+// Define the structure of a guarantor
+interface Guarantor {
+  name: string;
+  relationship: string;
+  phone_number: string;
+  collaterals: Collateral[];
+}
+
+// Define the structure of a collateral
+interface Collateral {
+  item_name: string;
+  item_count: number;
+  additional_details: string;
+}
+
+// Define the structure of viewCustomerDetails
+interface ViewCustomerDetails {
+  customer: {
+    first_name: string;
+    last_name: string;
+    phone: string;
+    national_id: string;
+    address: string;
+    occupation: string;
+    monthly_income: number;
+  };
+  collaterals: Collateral[];
+  referees: Referee[];
+  guarantors: Guarantor[];
+}
+
 const Customers = () => {
   const { isOpen, openModal, closeModal } = useModal();
   const navigate = useNavigate();
@@ -33,6 +71,8 @@ const Customers = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null
   );
+  const [viewCustomerDetails, setViewCustomerDetails] =
+    useState<ViewCustomerDetails | null>(null); // State for detailed customer data
 
   const role: string = JSON.parse(localStorage.getItem("role") || "''");
   const userId: string = localStorage.getItem("userId") || "";
@@ -111,6 +151,18 @@ const Customers = () => {
     }
   };
 
+  const handleViewClick = async (customerId: number) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/api/customerNew/${customerId}`
+      );
+      setViewCustomerDetails(response.data); // Set the detailed customer data
+      openModal(); // Open the modal
+    } catch (error) {
+      console.error("Error fetching customer details:", error);
+    }
+  };
+
   return (
     <div>
       <ToastContainer position="bottom-right" />
@@ -148,7 +200,7 @@ const Customers = () => {
                   </TableCell>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 font-medium text-gray-500 text-theme-xs dark:text-gray-400 text-center"
                   >
                     Actions
                   </TableCell>
@@ -198,13 +250,118 @@ const Customers = () => {
                       >
                         Delete
                       </button>
-                      <button className="ml-4">View</button>
+                      <button
+                        className="ml-4"
+                        onClick={() => handleViewClick(customer.id)}
+                      >
+                        View
+                      </button>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
             <Modal
+              isOpen={isOpen}
+              onClose={closeModal}
+              className="max-w-[700px] m-4"
+            >
+              <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+                <div className="px-2 pr-14">
+                  <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+                    Customer Details
+                  </h4>
+                </div>
+                {viewCustomerDetails ? (
+                  <div className="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
+                    <div className="mt-7">
+                      <h5 className="font-bold">Personal Information</h5>
+                      <p>
+                        Name: {viewCustomerDetails.customer.first_name}{" "}
+                        {viewCustomerDetails.customer.last_name}
+                      </p>
+                      <p>Phone: {viewCustomerDetails.customer.phone}</p>
+                      <p>
+                        National ID: {viewCustomerDetails.customer.national_id}
+                      </p>
+                      <p>Address: {viewCustomerDetails.customer.address}</p>
+                      <p>
+                        Occupation: {viewCustomerDetails.customer.occupation}
+                      </p>
+                      <p>
+                        Monthly Income:{" "}
+                        {viewCustomerDetails.customer.monthly_income}
+                      </p>
+
+                      <h5 className="font-bold mt-4">Collaterals</h5>
+                      {viewCustomerDetails.collaterals.length > 0 ? (
+                        viewCustomerDetails.collaterals.map(
+                          (collateral: Collateral, index: number) => (
+                            <p key={index}>
+                              {collateral.item_name} - {collateral.item_count} (
+                              {collateral.additional_details})
+                            </p>
+                          )
+                        )
+                      ) : (
+                        <p>No collaterals available.</p>
+                      )}
+                      <h5 className="font-bold mt-4">Referees</h5>
+                      {viewCustomerDetails?.referees.length > 0 ? (
+                        viewCustomerDetails.referees.map((referee, index) => (
+                          <p key={index}>
+                            {referee.name} - {referee.relationship} (
+                            {referee.phone_number})
+                          </p>
+                        ))
+                      ) : (
+                        <p>No referees available.</p>
+                      )}
+
+                      <h5 className="font-bold mt-4">Guarantors</h5>
+                      {viewCustomerDetails?.guarantors.length > 0 ? (
+                        viewCustomerDetails.guarantors.map(
+                          (guarantor, index) => (
+                            <div key={index}>
+                              <p>
+                                {guarantor.name} - {guarantor.relationship} (
+                                {guarantor.phone_number})
+                              </p>
+                              <h6 className="font-bold">
+                                Guarantor Collaterals
+                              </h6>
+                              {guarantor.collaterals.length > 0 ? (
+                                guarantor.collaterals.map(
+                                  (collateral, cIndex) => (
+                                    <p key={cIndex}>
+                                      {collateral.item_name} -{" "}
+                                      {collateral.item_count} (
+                                      {collateral.additional_details})
+                                    </p>
+                                  )
+                                )
+                              ) : (
+                                <p>No collaterals available.</p>
+                              )}
+                            </div>
+                          )
+                        )
+                      ) : (
+                        <p>No guarantors available.</p>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <p>Loading...</p>
+                )}
+                <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
+                  <Button size="sm" variant="outline" onClick={closeModal}>
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </Modal>
+            {/* <Modal
               isOpen={isOpen}
               onClose={closeModal}
               className="max-w-[700px] m-4"
@@ -289,7 +446,7 @@ const Customers = () => {
                   </div>
                 </form>
               </div>
-            </Modal>
+            </Modal> */}
           </div>
         </div>
       </div>
