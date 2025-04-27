@@ -390,13 +390,13 @@ router.delete("/:id", async (req, res) => {
 });
 
 // Run default checks daily (call this from a cron job)
-router.get("/check-defaults", async (req, res) => {
+router.post("/check-defaults", async (req, res) => {
   try {
     await checkLoanDefaults(connection);
     res.status(200).json({ message: "Default check completed" });
   } catch (err) {
     console.error("Error checking defaults:", err);
-    res.status(500).json({ error: "Error checking loan defaults" });
+    res.status(500).json({ message: "Error checking loan defaults", error: err.message });
   }
 });
 

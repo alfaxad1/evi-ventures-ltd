@@ -23,7 +23,7 @@ export const calculateRemainingBalance = async (loanId, connection) => {
 export const checkLoanDefaults = async (connection) => {
   try {
     // Find loans past their expected completion date
-    const [defaultedLoans] = await connection.promise().query(`
+    const [defaultedLoans] = await connection.query(`
       SELECT id 
       FROM loans 
       WHERE status = 'active' 
@@ -32,7 +32,7 @@ export const checkLoanDefaults = async (connection) => {
 
     // Mark loans as defaulted
     for (const loan of defaultedLoans) {
-      await connection.promise().query(
+      await connection.query(
         `UPDATE loans 
         SET status = 'defaulted' 
         WHERE id = ?`,
