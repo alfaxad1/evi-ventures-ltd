@@ -101,7 +101,10 @@ router.get("/", async (req, res) => {
 // Get pending loan applications with extended customer details
 router.get("/pending", async (req, res) => {
   try {
-    const [loans] = await connection.query(`
+    const { officerId, role } = req.query; // Get officerId and role from query parameters
+    const queryParams = [];
+
+    let sql = `
       SELECT 
         l.id AS loan_id,
         l.customer_id,
@@ -127,10 +130,36 @@ router.get("/pending", async (req, res) => {
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_products lp ON l.product_id = lp.id
       WHERE l.approval_status = 'pending'
-      ORDER BY l.created_at DESC
-    `);
+    `;
 
-    res.status(200).json(loans);
+    // Add filtering for officer role
+    if (role === "officer" && officerId) {
+      sql += " AND l.officer_id = ?";
+      queryParams.push(officerId);
+    }
+
+    sql += " ORDER BY l.created_at DESC";
+
+    // Get the pending loans
+    const [loans] = await connection.query(sql, queryParams);
+
+    // Get the total count of pending loans
+    const [countResult] = await connection.query(
+      `
+      SELECT COUNT(*) AS total
+      FROM loans l
+      WHERE l.approval_status = 'pending'
+      ${role === "officer" && officerId ? "AND l.officer_id = ?" : ""}
+      `,
+      role === "officer" && officerId ? [officerId] : []
+    );
+
+    const total = countResult[0].total;
+
+    res.status(200).json({
+      data: loans,
+      total,
+    });
   } catch (err) {
     console.error("Error getting pending loans:", err);
     res.status(500).json({

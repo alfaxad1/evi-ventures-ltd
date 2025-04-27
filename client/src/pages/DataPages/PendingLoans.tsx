@@ -31,6 +31,8 @@ interface pendingLoan {
 }
 
 const PendingLoans = () => {
+  const role = JSON.parse(localStorage.getItem("role") || "''");
+  const officerId = localStorage.getItem("userId") || "";
   const { isOpen, openModal, closeModal } = useModal();
   const [pendingLoans, setPendingLoans] = useState<pendingLoan[]>([]);
   const [selectedApplicationId, setSelectedApplicationId] = useState<
@@ -40,21 +42,24 @@ const PendingLoans = () => {
   const [reason, setReason] = useState<string>("");
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
 
-  const fetchPendingLoans = async () => {
+  const fetchPendingLoans = async (
+    role: string,
+    officerId: string
+  ): Promise<void> => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/loansApplication/pending"
+        `http://localhost:8000/api/loansApplication/pending?role=${role}&officerId=${officerId}`
       );
       console.log("Pending loans fetched successfully:", response.data);
-      setPendingLoans(response.data);
+      setPendingLoans(response.data.data);
     } catch (error) {
       console.error("Error fetching pending loans:", error);
     }
   };
 
   useEffect(() => {
-    fetchPendingLoans();
-  }, []);
+    fetchPendingLoans(role, officerId);
+  }, [role, officerId]);
 
   const handleApproveClick = (applicationId: number) => {
     setSelectedApplicationId(applicationId); // Set the application ID for approval
@@ -84,7 +89,7 @@ const PendingLoans = () => {
         }
       );
       console.log("Loan approved successfully");
-      fetchPendingLoans();
+      fetchPendingLoans(role, officerId);
       setIsApproveModalOpen(false);
       setDisbursedAmount(null);
       setSelectedApplicationId(null);
@@ -133,7 +138,7 @@ const PendingLoans = () => {
         }
       );
       console.log("Loan rejected successfully");
-      fetchPendingLoans();
+      fetchPendingLoans(role, officerId);
       setIsApproveModalOpen(false);
       closeModal();
       setReason("");
