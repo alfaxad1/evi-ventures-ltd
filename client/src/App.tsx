@@ -33,6 +33,7 @@ import { Defaulted } from "./pages/DataPages/Defaulted";
 import { Due2To7 } from "./pages/DataPages/Due2To7";
 import { DueToday } from "./pages/DataPages/DueToday";
 import { DueTommorrow } from "./pages/DataPages/DueTommorrow";
+import { MonthlyActiveLoans } from "./pages/DataPages/MonthlyActiveLoans";
 
 export default function App() {
   return (
@@ -89,6 +90,10 @@ export default function App() {
             <Route path="/due-2-7" element={<Due2To7 />} />
             <Route path="/due-today" element={<DueToday />} />
             <Route path="/due-tommorrow" element={<DueTommorrow />} />
+            <Route
+              path="/monthly-active-loans"
+              element={<MonthlyActiveLoans />}
+            />
           </Route>
 
           {/* Auth Layout */}

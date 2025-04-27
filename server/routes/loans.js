@@ -286,7 +286,82 @@ router.get("/loan-details/pending-disbursement", async (req, res) => {
     });
   }
 });
+// Get monthly active loans for a specific officer with deficit and percentage
+router.get("/monthly-active-loans", async (req, res) => {
+  try {
+    const { officerId, month, year } = req.query;
 
+    if (!officerId || !month || !year) {
+      return res.status(400).json({
+        error: "Officer ID, month, and year are required",
+      });
+    }
+
+    const targetAmount = 700000; // Target total amount
+
+    // Query to get loans for the specified officer, month, and year
+    const [loans] = await connection.query(
+      `
+      SELECT 
+        l.id,
+        CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
+        c.national_id,
+        c.phone,
+        lp.name AS loan_product,
+        l.principal,
+        l.total_interest,
+        l.total_amount,
+        l.status,
+        l.disbursement_date
+      FROM loans l
+      JOIN customers c ON l.customer_id = c.id
+      JOIN loan_products lp ON l.product_id = lp.id
+      WHERE l.officer_id = ? 
+        AND l.status = 'active'
+        AND MONTH(l.disbursement_date) = ?
+        AND YEAR(l.disbursement_date) = ?
+      ORDER BY l.disbursement_date DESC
+      `,
+      [officerId, month, year]
+    );
+
+    // Query to calculate the sum of total_amount and count of loans
+    const [summary] = await connection.query(
+      `
+      SELECT 
+        COUNT(*) as loan_count,
+        SUM(l.total_amount) as total_amount_sum
+      FROM loans l
+      WHERE l.officer_id = ? 
+        AND l.status = 'active'
+        AND MONTH(l.disbursement_date) = ?
+        AND YEAR(l.disbursement_date) = ?
+      `,
+      [officerId, month, year]
+    );
+
+    const totalAmountSum = summary[0].total_amount_sum || 0; // Ensure no null values
+    const loanCount = summary[0].loan_count || 0;
+
+    // Calculate deficit and percentage
+    const deficit = targetAmount - totalAmountSum;
+    const percentage = ((totalAmountSum / targetAmount) * 100).toFixed(2); // Rounded to 2 decimal places
+
+    res.status(200).json({
+      loans,
+      summary: {
+        loan_count: loanCount,
+        total_amount_sum: totalAmountSum,
+        deficit: deficit,
+        percentage: `${percentage}%`,
+        target_amount: targetAmount,
+      },
+    });
+  } catch (err) {
+    console.error("Error fetching monthly active loans:", err);
+    res.status(500).json({ error: "Failed to retrieve monthly active loans" });
+  }
+});
 //disburse a loan
 router.put("/disburse/:loanId", authorizeRoles(["admin"]), async (req, res) => {
   const { mpesaCode } = req.body;
