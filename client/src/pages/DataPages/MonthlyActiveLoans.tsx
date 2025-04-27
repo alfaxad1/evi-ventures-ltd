@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -40,7 +40,7 @@ const MonthlyActiveLoans = () => {
   const currentMonth = new Date().getMonth() + 1; // JavaScript months are 0-based
   const currentYear = new Date().getFullYear();
 
-  const fetchMonthlyActiveLoans = async () => {
+  const fetchMonthlyActiveLoans = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -67,11 +67,11 @@ const MonthlyActiveLoans = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [officerId, currentMonth, currentYear]);
 
   useEffect(() => {
     fetchMonthlyActiveLoans();
-  }, []);
+  }, [fetchMonthlyActiveLoans]);
 
   if (loading) {
     return <BarLoader color="#36D7B7" width={150} height={4} />;

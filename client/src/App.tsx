@@ -34,6 +34,7 @@ import { Due2To7 } from "./pages/DataPages/Due2To7";
 import { DueToday } from "./pages/DataPages/DueToday";
 import { DueTommorrow } from "./pages/DataPages/DueTommorrow";
 import { MonthlyActiveLoans } from "./pages/DataPages/MonthlyActiveLoans";
+import AuthenticatedMonthlyApprovedRepayments from "./pages/DataPages/MonthlyApprovedRepayments";
 
 export default function App() {
   return (
@@ -93,6 +94,10 @@ export default function App() {
             <Route
               path="/monthly-active-loans"
               element={<MonthlyActiveLoans />}
+            />
+            <Route
+              path="/monthly-approved-repayments"
+              element={<AuthenticatedMonthlyApprovedRepayments />}
             />
           </Route>
 

@@ -117,6 +117,85 @@ router.get("/approved", async (req, res) => {
   }
 });
 
+// Get monthly approved repayments for a specific officer with summary
+router.get("/monthly-approved", async (req, res) => {
+  try {
+    const { officerId, month, year } = req.query;
+
+    if (!officerId || !month || !year) {
+      return res.status(400).json({
+        error: "Officer ID, month, and year are required",
+      });
+    }
+
+    const targetAmount = 700000; // Target total amount
+
+    // Query to get approved repayments for the specified officer, month, and year
+    const [repayments] = await connection.query(
+      `
+      SELECT 
+        r.id,
+        r.amount,
+        r.paid_date,
+        CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
+        c.national_id,
+        c.phone,
+        l.total_amount AS loan_total,
+        lp.name AS loan_product
+      FROM repayments r
+      JOIN loans l ON r.loan_id = l.id
+      JOIN customers c ON l.customer_id = c.id
+      JOIN loan_products lp ON l.product_id = lp.id
+      WHERE r.status = 'paid'
+        AND l.officer_id = ?
+        AND MONTH(r.paid_date) = ?
+        AND YEAR(r.paid_date) = ?
+      ORDER BY r.paid_date DESC
+      `,
+      [officerId, month, year]
+    );
+
+    // Query to calculate the sum of approved repayments and count
+    const [summary] = await connection.query(
+      `
+      SELECT 
+        COUNT(*) as repayment_count,
+        SUM(r.amount) as total_amount_sum
+      FROM repayments r
+      JOIN loans l ON r.loan_id = l.id
+      WHERE r.status = 'paid'
+        AND l.officer_id = ?
+        AND MONTH(r.paid_date) = ?
+        AND YEAR(r.paid_date) = ?
+      `,
+      [officerId, month, year]
+    );
+
+    const totalAmountSum = summary[0].total_amount_sum || 0; // Ensure no null values
+    const repaymentCount = summary[0].repayment_count || 0;
+
+    // Calculate deficit and percentage
+    const deficit = targetAmount - totalAmountSum;
+    const percentage = ((totalAmountSum / targetAmount) * 100).toFixed(2); // Rounded to 2 decimal places
+
+    res.status(200).json({
+      repayments,
+      summary: {
+        repayment_count: repaymentCount,
+        total_amount_sum: totalAmountSum,
+        deficit: deficit,
+        percentage: `${percentage}%`,
+        target_amount: targetAmount,
+      },
+    });
+  } catch (err) {
+    console.error("Error fetching monthly approved repayments:", err);
+    res
+      .status(500)
+      .json({ error: "Failed to retrieve monthly approved repayments" });
+  }
+});
+
 // Get repayment by ID with full details
 router.get("/:id", async (req, res) => {
   try {
@@ -126,7 +205,7 @@ router.get("/:id", async (req, res) => {
       FROM repayments r
       JOIN loans l ON r.loan_id = l.id
       JOIN customers c ON l.customer_id = c.id
-      JOIN loan_products lp ON l.loan_product_id = lp.id
+      JOIN loan_products lp ON l.product_id = lp.id
       WHERE r.id = ?
     `;
     const [results] = await connection.query(sql, [req.params.id]);
@@ -150,9 +229,9 @@ router.post("/", validateRepaymentData, async (req, res) => {
     await connection.beginTransaction();
 
     // Get loan details
-    const [loan] = await connection
-      
-      .query("SELECT * FROM loans WHERE id = ?", [loanId]);
+    const [loan] = await connection.query("SELECT * FROM loans WHERE id = ?", [
+      loanId,
+    ]);
 
     if (loan.length === 0) {
       return res.status(404).json({ error: "Loan not found" });
@@ -217,9 +296,10 @@ router.put("/:id", validateRepaymentData, async (req, res) => {
     await connection.beginTransaction();
 
     // 1. Get current repayment data
-    const [currentRepayment] = await connection
-      
-      .query("SELECT * FROM repayments WHERE id = ?", [id]);
+    const [currentRepayment] = await connection.query(
+      "SELECT * FROM repayments WHERE id = ?",
+      [id]
+    );
 
     if (currentRepayment.length === 0) {
       await connection.rollback();
@@ -243,15 +323,13 @@ router.put("/:id", validateRepaymentData, async (req, res) => {
             (customer_id, loan_id, amount, type, mpesa_code, status, initiated_by, created_at) 
           VALUES (?, ?, ?, 'repayment', ?, 'completed', ?, NOW())
         `;
-        await connection
-          
-          .query(mpesaSql, [
-            customerId,
-            loanId,
-            amount,
-            mpesaCode,
-            initiatedBy,
-          ]);
+        await connection.query(mpesaSql, [
+          customerId,
+          loanId,
+          amount,
+          mpesaCode,
+          initiatedBy,
+        ]);
       }
 
       // Update loan status and balance
@@ -276,11 +354,10 @@ router.delete("/:id", async (req, res) => {
     await connection.beginTransaction();
 
     // 1. Get repayment data before deletion
-    const [repayment] = await connection
-      
-      .query("SELECT loan_id, status FROM repayments WHERE id = ?", [
-        req.params.id,
-      ]);
+    const [repayment] = await connection.query(
+      "SELECT loan_id, status FROM repayments WHERE id = ?",
+      [req.params.id]
+    );
 
     if (repayment.length === 0) {
       await connection.rollback();
@@ -291,9 +368,9 @@ router.delete("/:id", async (req, res) => {
     const wasPaid = repayment[0].status === "paid";
 
     // 2. Delete the repayment
-    await connection
-      
-      .query("DELETE FROM repayments WHERE id = ?", [req.params.id]);
+    await connection.query("DELETE FROM repayments WHERE id = ?", [
+      req.params.id,
+    ]);
 
     // 3. Recalculate loan status if deleted repayment was paid
     if (wasPaid) {
