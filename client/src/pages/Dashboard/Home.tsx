@@ -6,70 +6,135 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 const Home = () => {
-  const [customersCount, setCustomersCount] = useState([]);
+  const role = JSON.parse(localStorage.getItem("role") || "''");
+  const officerId = localStorage.getItem("userId") || "";
+
+  const [pendingLoansCount, setPendingLoansCount] = useState([]);
   const [approvedLoansCount, setApprovedLoansCount] = useState([]);
   const [rejectedLoansCount, setRejectedLoansCount] = useState([]);
-  const [pendingLoansCount, setPendingLoansCount] = useState([]);
+  const [clearedLoansCount, setClearedLoansCount] = useState([]);
+  const [dueTodayCount, setDueTodayCount] = useState([]);
+  const [dueTommorrowCount, setDueTommorrowCount] = useState([]);
 
-  //fetch all customers
-  const fetchCustomers = async () => {
+  //pending loans
+  const fetchPendingLoans = async (
+    role: string,
+    officerId: string
+  ): Promise<void> => {
     try {
-      const response = await axios.get("http://localhost:8000/api/customers");
-      console.log("Total customers:", response.data.meta.total);
-      setCustomersCount(response.data.meta.total);
+      const response = await axios.get(
+        `http://localhost:8000/api/loansApplication/pending?role=${role}&officerId=${officerId}`
+      );
+      console.log("Pending loans fetched successfully:", response.data);
+      setPendingLoansCount(response.data.total);
+    } catch (error) {
+      console.error("Error fetching pending loans:", error);
+    }
+  };
+  useEffect(() => {
+    fetchPendingLoans(role, officerId);
+  }, [role, officerId]);
+
+  //approved loans
+  const fetchLoans = async (role: string, officerId: string): Promise<void> => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/api/loans/loan-details?role=${role}&officerId=${officerId}`
+      );
+      console.log("Approved loans", response.data.meta.total);
+      setApprovedLoansCount(response.data.meta.total);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
   useEffect(() => {
-    fetchCustomers();
-  }, []);
+    fetchLoans(role, officerId);
+  }, [role, officerId]);
 
-  //fetch all approved loans
-  const fetchLoans = async () => {
+  //rejected loans
+  const fetchRejectedLoans = async (
+    role: string,
+    officerId: string
+  ): Promise<void> => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/loans/loan-details"
+        `http://localhost:8000/api/loansApplication/rejected?role=${role}&officerId=${officerId}`
       );
-      console.log("number", response.data.length);
-      setApprovedLoansCount(response.data.length);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-  useEffect(() => {
-    fetchLoans();
-  }, []);
-
-  const fetchRejectedLoans = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:8000/api/loansApplication/rejected"
-      );
+      console.log("Rejected loans:", response.data.length);
       setRejectedLoansCount(response.data.length);
     } catch (error) {
       console.error(error);
     }
   };
   useEffect(() => {
-    fetchRejectedLoans();
-  }, []);
+    fetchRejectedLoans(role, officerId);
+  }, [role, officerId]);
 
-  const fetchPendingLoans = async () => {
+  //cleared loans
+  const fetchPaidLoans = async (
+    role: string,
+    officerId: string
+  ): Promise<void> => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/loansApplication/pending"
+        `http://localhost:8000/api/loans/loan-details/paid?role=${role}&officerId=${officerId}`
       );
-      console.log("Pending loans fetched successfully:", response.data);
-      setPendingLoansCount(response.data.length);
-    } catch (error) {
-      console.error("Error fetching pending loans:", error);
+      console.log("Cleared Loans:", response.data.length);
+      setClearedLoansCount(response.data.length);
+    } catch (err) {
+      console.log(err);
     }
   };
-
   useEffect(() => {
-    fetchPendingLoans();
-  }, []);
+    fetchPaidLoans(role, officerId);
+  }, [role, officerId]);
+
+  //due today
+  const DueToday = async (role: string, officerId: string): Promise<void> => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/api/loans/loan-details/due-today",
+        {
+          params: {
+            role,
+            officerId,
+          },
+        }
+      );
+      console.log("Due today:", response.data.meta.total);
+      setDueTodayCount(response.data.meta.total);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  useEffect(() => {
+    DueToday(role, officerId);
+  }, [role, officerId]);
+
+  //due tommorrow
+  const DueTommorrow = async (
+    role: string,
+    officerId: string
+  ): Promise<void> => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/api/loans/loan-details/due-tomorrow",
+        {
+          params: {
+            role,
+            officerId,
+          },
+        }
+      );
+      console.log("Due tommorrow:", response.data.meta.total);
+      setDueTommorrowCount(response.data.meta.total);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  useEffect(() => {
+    DueTommorrow(role, officerId);
+  }, [role, officerId]);
 
   return (
     <>
@@ -89,7 +154,7 @@ const Home = () => {
                     Pending Loans
                   </span>
                   <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
-                    {customersCount}
+                    {pendingLoansCount}
                   </h4>
                 </div>
               </div>
@@ -143,7 +208,7 @@ const Home = () => {
                     Cleared Loans
                   </span>
                   <h4 className="mt-2 font-bold text-center text-gray-800 text-title-sm dark:text-white/90">
-                    {pendingLoansCount}
+                    {clearedLoansCount}
                   </h4>
                 </div>
               </div>
@@ -160,8 +225,8 @@ const Home = () => {
                   <span className="text-lg text-gray-500 dark:text-gray-400">
                     Due Today
                   </span>
-                  <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-                    5,359
+                  <h4 className="mt-2 font-bold text-center text-gray-800 text-title-sm dark:text-white/90">
+                    {dueTodayCount}
                   </h4>
                 </div>
               </div>
@@ -175,11 +240,11 @@ const Home = () => {
               </div>
               <div className="flex items-end justify-between mt-5">
                 <div>
-                  <span className="text-lg text-gray-500 dark:text-gray-400">
+                  <span className="text-lg  text-gray-500 dark:text-gray-400">
                     Due Tommorrow
                   </span>
-                  <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-                    5,359
+                  <h4 className="mt-2 font-bold text-center text-gray-800 text-title-sm dark:text-white/90">
+                    {dueTommorrowCount}
                   </h4>
                 </div>
               </div>
