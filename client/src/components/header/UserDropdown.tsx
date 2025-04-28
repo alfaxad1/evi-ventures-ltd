@@ -18,7 +18,7 @@ const fetchUser = async (
     const user = response.data[0];
     setName(user.first_name.concat(" ", user.last_name));
     setEmail(user.email);
-    setAvatar(user.avatar || "/images/user/defelaut.jpeg"); // Use default avatar if none is provided
+    setAvatar(user.avatar || "/images/user/defelaut.jpeg");
   } catch (error) {
     console.error("Error fetching user data:", error);
   }

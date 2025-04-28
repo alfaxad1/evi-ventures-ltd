@@ -2,6 +2,7 @@ import express from "express";
 import connection from "../config/dbConnection.js";
 import {
   calculateRemainingBalance,
+  checkMissedPayments,
   updateLoanStatus,
 } from "../services/loanService.js";
 import { checkLoanDefaults } from "../services/loanService.js";
@@ -396,7 +397,24 @@ router.post("/check-defaults", async (req, res) => {
     res.status(200).json({ message: "Default check completed" });
   } catch (err) {
     console.error("Error checking defaults:", err);
-    res.status(500).json({ message: "Error checking loan defaults", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error checking loan defaults", error: err.message });
+  }
+});
+
+// Run missed payments checks daily
+router.post("/check-missed-payments", async (req, res) => {
+  try {
+    await checkMissedPayments(connection); // Call the function from loanService
+    res
+      .status(200)
+      .json({ message: "Missed payments check completed successfully" });
+  } catch (err) {
+    console.error("Error checking missed payments:", err);
+    res
+      .status(500)
+      .json({ error: "Error checking missed payments", details: err.message });
   }
 });
 

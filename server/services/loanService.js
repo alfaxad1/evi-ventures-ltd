@@ -1,6 +1,6 @@
 // Calculate remaining balance for a loan
 export const calculateRemainingBalance = async (loanId, connection) => {
-  const [results] = await connection.promise().query(
+  const [results] = await connection.query(
     `
       SELECT 
         l.total_amount,
@@ -49,9 +49,9 @@ export const checkLoanDefaults = async (connection) => {
 export const updateLoanStatus = async (loanId, connection) => {
   try {
     // Get loan details
-    const [loan] = await connection
-      .promise()
-      .query("SELECT * FROM loans WHERE id = ?", [loanId]);
+    const [loan] = await connection.query("SELECT * FROM loans WHERE id = ?", [
+      loanId,
+    ]);
 
     if (loan.length === 0) {
       throw new Error("Loan not found");
@@ -60,12 +60,10 @@ export const updateLoanStatus = async (loanId, connection) => {
     const { total_amount, due_date, arrears } = loan[0];
 
     // Calculate installments sum
-    const [installments] = await connection
-      .promise()
-      .query(
-        "SELECT IFNULL(SUM(amount), 0) as installments_sum FROM repayments WHERE loan_id = ? AND status = 'paid'",
-        [loanId]
-      );
+    const [installments] = await connection.query(
+      "SELECT IFNULL(SUM(amount), 0) as installments_sum FROM repayments WHERE loan_id = ? AND status = 'paid'",
+      [loanId]
+    );
 
     const installmentsSum = installments[0].installments_sum;
 
@@ -88,7 +86,7 @@ export const updateLoanStatus = async (loanId, connection) => {
     }
 
     // Update loan record
-    await connection.promise().query(
+    await connection.query(
       `UPDATE loans 
       SET installments_sum = ?, 
           remaining_balance = ?, 
@@ -107,13 +105,13 @@ export const updateLoanStatus = async (loanId, connection) => {
 export const checkMissedPayments = async (connection) => {
   try {
     // Find loans with missed payments
-    const [missedLoans] = await connection.promise().query(`
+    const [missedLoans] = await connection.query(`
       SELECT 
         id, 
         installment_amount, 
         installment_type, 
         due_date, 
-        arrears 
+        IFNULL(arrears, 0) AS arrears -- Ensure arrears is treated as 0 if null
       FROM loans 
       WHERE status IN ('active', 'partially_paid') 
       AND due_date < CURDATE()
@@ -123,8 +121,12 @@ export const checkMissedPayments = async (connection) => {
       const { id, installment_amount, installment_type, due_date, arrears } =
         loan;
 
+      // Ensure arrears and installment_amount are numbers
+      const numericArrears = parseFloat(arrears) || 0;
+      const numericInstallmentAmount = parseFloat(installment_amount) || 0;
+
       // Add missed installment to arrears
-      const newArrears = arrears + installment_amount;
+      const newArrears = numericArrears + numericInstallmentAmount;
 
       // Calculate the next due date
       let nextDueDate = new Date(due_date);
@@ -135,7 +137,7 @@ export const checkMissedPayments = async (connection) => {
       }
 
       // Update loan record
-      await connection.promise().query(
+      await connection.query(
         `UPDATE loans 
         SET arrears = ?, 
             due_date = ? 

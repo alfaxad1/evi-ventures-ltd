@@ -57,6 +57,7 @@ interface ViewCustomerDetails {
     address: string;
     occupation: string;
     monthly_income: number;
+    passport_photo: string;
   };
   collaterals: Collateral[];
   referees: Referee[];
@@ -292,6 +293,13 @@ const Customers = () => {
                         Monthly Income:{" "}
                         {viewCustomerDetails.customer.monthly_income}
                       </p>
+
+                      <span>
+                        <img
+                          src={viewCustomerDetails.customer.passport_photo}
+                          alt="passport"
+                        />
+                      </span>
 
                       <h5 className="font-bold mt-4">Collaterals</h5>
                       {viewCustomerDetails.collaterals.length > 0 ? (
