@@ -82,16 +82,34 @@ const MonthlyApprovedRepayments = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Monthly Approved Repayments</h1>
+      <h1 className="text-gray-900 text-xl px-4 py-2 inline-block mb-3">
+        Monthly Collection
+      </h1>
 
       {summary && (
         <div className="mb-6">
-          <h2 className="text-xl font-semibold">Summary</h2>
-          <p>Total Repayments: {summary.repayment_count}</p>
-          <p>Total Amount: {summary.total_amount_sum.toLocaleString()}</p>
-          <p>Deficit: {summary.deficit.toLocaleString()}</p>
-          <p>Percentage: {summary.percentage}</p>
-          <p>Target Amount: {summary.target_amount.toLocaleString()}</p>
+          <div className="flex items-center mb-2 text-green-600">
+            <svg className="w-4 h-4 mr-2" data-lucide="dollar-sign"></svg>
+            <span>Total Disbursements: {summary.repayment_count}</span>
+          </div>
+          <div className="flex items-center mb-2 text-blue-600">
+            <svg className="w-4 h-4 mr-2" data-lucide="dollar-sign"></svg>
+            <span>
+              Total Amount: {summary.total_amount_sum.toLocaleString()}
+            </span>
+          </div>
+          <div className="flex items-center mb-2 text-pink-600">
+            <svg className="w-4 h-4 mr-2" data-lucide="dollar-sign"></svg>
+            <span>Deficit: {summary.deficit.toLocaleString()}</span>
+          </div>
+          <div className="flex items-center mb-2 text-green-600">
+            <svg className="w-4 h-4 mr-2" data-lucide="dollar-sign"></svg>
+            <span>Percentage: {summary.percentage}</span>
+          </div>
+          <div className="flex items-center mb-2 text-blue-600">
+            <svg className="w-4 h-4 mr-2" data-lucide="dollar-sign"></svg>
+            <span>Target Amount: {summary.target_amount.toLocaleString()}</span>
+          </div>
         </div>
       )}
 
@@ -102,13 +120,27 @@ const MonthlyApprovedRepayments = () => {
               {/* Table Header */}
               <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
                 <TableRow>
-                  <TableCell>Customer Name</TableCell>
-                  <TableCell>National ID</TableCell>
-                  <TableCell>Phone</TableCell>
-                  <TableCell>Loan Product</TableCell>
-                  <TableCell>Repayment Amount</TableCell>
-                  <TableCell>Loan Total</TableCell>
-                  <TableCell>Paid Date</TableCell>
+                  <TableCell className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400">
+                    Customer Name
+                  </TableCell>
+                  <TableCell className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400">
+                    National ID
+                  </TableCell>
+                  <TableCell className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400">
+                    Phone
+                  </TableCell>
+                  <TableCell className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400">
+                    Loan Product
+                  </TableCell>
+                  <TableCell className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400">
+                    Repayment Amount
+                  </TableCell>
+                  <TableCell className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400">
+                    Loan Total
+                  </TableCell>
+                  <TableCell className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400">
+                    Paid Date
+                  </TableCell>
                 </TableRow>
               </TableHeader>
 
@@ -116,15 +148,27 @@ const MonthlyApprovedRepayments = () => {
               <TableBody>
                 {repayments.map((repayment) => (
                   <TableRow key={repayment.id}>
-                    <TableCell>{repayment.customer_name}</TableCell>
-                    <TableCell>{repayment.national_id}</TableCell>
-                    <TableCell>{repayment.phone}</TableCell>
-                    <TableCell>{repayment.loan_product}</TableCell>
-                    <TableCell>{repayment.amount.toLocaleString()}</TableCell>
-                    <TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                      {repayment.customer_name}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                      {repayment.national_id}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                      {repayment.phone}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                      {repayment.loan_product}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                      {repayment.amount.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       {repayment.loan_total.toLocaleString()}
                     </TableCell>
-                    <TableCell>{repayment.paid_date.split("T")[0]}</TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                      {repayment.paid_date.split("T")[0]}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

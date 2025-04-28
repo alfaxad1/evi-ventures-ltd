@@ -59,61 +59,61 @@ const Defaulted = () => {
               <TableRow>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   Customer Name
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   National ID
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   Phone
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   Loan Product
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   Principal
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   Total Interest
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   Total Amount
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   Due Date
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   Default Date
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   Days Overdue
                 </TableCell>

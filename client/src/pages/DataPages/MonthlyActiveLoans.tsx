@@ -83,16 +83,34 @@ const MonthlyActiveLoans = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Monthly Active Loans</h1>
+      <h1 className="text-gray-900 text-xl px-4 py-2 inline-block mb-3">
+        Monthly Disbursement
+      </h1>
 
       {summary && (
         <div className="mb-6">
-          <h2 className="text-xl font-semibold">Summary</h2>
-          <p>Total Loans: {summary.loan_count}</p>
-          <p>Total Amount: {summary.total_amount_sum.toLocaleString()}</p>
-          <p>Deficit: {summary.deficit.toLocaleString()}</p>
-          <p>Percentage: {summary.percentage}</p>
-          <p>Target Amount: {summary.target_amount.toLocaleString()}</p>
+          <div className="flex items-center mb-2 text-green-600">
+            <svg className="w-4 h-4 mr-2" data-lucide="dollar-sign"></svg>
+            <span>Total Disbursements: {summary.loan_count}</span>
+          </div>
+          <div className="flex items-center mb-2 text-blue-600">
+            <svg className="w-4 h-4 mr-2" data-lucide="dollar-sign"></svg>
+            <span>
+              Total Amount: {summary.total_amount_sum.toLocaleString()}
+            </span>
+          </div>
+          <div className="flex items-center mb-2 text-pink-600">
+            <svg className="w-4 h-4 mr-2" data-lucide="dollar-sign"></svg>
+            <span>Deficit: {summary.deficit.toLocaleString()}</span>
+          </div>
+          <div className="flex items-center mb-2 text-green-600">
+            <svg className="w-4 h-4 mr-2" data-lucide="dollar-sign"></svg>
+            <span>Percentage: {summary.percentage}</span>
+          </div>
+          <div className="flex items-center mb-2 text-blue-600">
+            <svg className="w-4 h-4 mr-2" data-lucide="dollar-sign"></svg>
+            <span>Target Amount: {summary.target_amount.toLocaleString()}</span>
+          </div>
         </div>
       )}
 
@@ -105,49 +123,49 @@ const MonthlyActiveLoans = () => {
                 <TableRow>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Customer Name
                   </TableCell>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     National ID
                   </TableCell>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Phone
                   </TableCell>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Loan Product
                   </TableCell>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Principal
                   </TableCell>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Total Interest
                   </TableCell>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Total Amount
                   </TableCell>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Disbursement Date
                   </TableCell>

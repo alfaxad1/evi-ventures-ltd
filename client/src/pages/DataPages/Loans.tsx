@@ -192,20 +192,20 @@ const Loans = () => {
                       {loan.customer_name}
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                    <TableCell className="px-4 py-3 text-blue-500 text-start text-theme-sm dark:text-gray-400">
                       {loan.loan_product}
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="px-4 py-3 text-blue-500 text-theme-sm dark:text-gray-400">
                       {loan.principal}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="px-4 py-3 text-blue-500 text-theme-sm dark:text-gray-400">
                       {loan.total_amount}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="px-4 py-3 text-blue-500 text-theme-sm dark:text-gray-400">
                       {loan.remaining_balance}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="px-4 py-3 text-blue-500 text-theme-sm dark:text-gray-400">
                       <span
                         style={{
                           color: loan.status === "active" ? "green" : "blue",
@@ -216,14 +216,14 @@ const Loans = () => {
                           : loan.status}
                       </span>
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="px-4 py-3 text-blue-500 text-theme-sm dark:text-gray-400">
                       {loan.due_date ? loan.due_date.split("T")[0] : "N/A"}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-center text-theme-sm dark:text-gray-400">
+                    <TableCell className="px-4 py-3 text-blue-500 text-center text-theme-sm dark:text-gray-400">
                       {loan.days_remaining}
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="px-4 py-3 text-blue-500 text-theme-sm dark:text-gray-400">
                       <button
                         onClick={() => handleRepay(loan.id, loan.due_date)}
                         className="text-success-500 hover:text-success-700 ml-4"

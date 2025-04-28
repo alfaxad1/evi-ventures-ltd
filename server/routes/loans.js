@@ -878,4 +878,64 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+//get counts
+router.get("/loan-details/counts", async (req, res) => {
+  try {
+    const { officerId, role } = req.query;
+
+    // Dynamically construct the officer filter
+    const officerFilter =
+      role === "officer" ? `AND l.officer_id = '${officerId}'` : "";
+
+    // Query to get counts for each category
+    const [counts] = await connection.query(
+      `
+      SELECT 
+        (SELECT COUNT(*) 
+         FROM loans l 
+         WHERE l.due_date = CURDATE() 
+           AND l.status IN ('active', 'partially_paid') 
+           ${officerFilter}) AS loans_due_today,
+        (SELECT COUNT(*) 
+         FROM loans l 
+         WHERE l.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY) 
+           AND l.status IN ('active', 'partially_paid') 
+           ${officerFilter}) AS loans_due_tomorrow,
+        (SELECT COUNT(*) 
+         FROM loans l 
+         WHERE l.due_date BETWEEN DATE_ADD(CURDATE(), INTERVAL 2 DAY) AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) 
+           AND l.status IN ('active', 'partially_paid') 
+           ${officerFilter}) AS loans_due_2_7_days,
+        (SELECT COUNT(*) 
+         FROM loans l 
+         WHERE l.status = 'defaulted' 
+           ${officerFilter}) AS defaulted_loans,
+        (SELECT COUNT(*) 
+         FROM loans l 
+         WHERE l.status = 'pending_disbursement' 
+           ${officerFilter}) AS pending_disbursement_loans,
+        (SELECT COUNT(*) 
+         FROM loans l 
+         WHERE l.status IN ('active', 'partially_paid') 
+           ${officerFilter}) AS active_loans,
+        (SELECT COUNT(*) 
+         FROM loans l 
+         WHERE l.approval_status = 'pending' 
+           ${officerFilter}) AS pending_loan_applications,
+        (SELECT COUNT(*) 
+         FROM loan_applications la 
+         WHERE la.status = 'rejected' 
+           ${
+             role === "officer" ? `AND la.officer_id = '${officerId}'` : ""
+           }) AS rejected_loan_applications
+      `
+    );
+
+    res.status(200).json(counts[0]); // Return the counts as a single object
+  } catch (err) {
+    console.error("Error fetching loan counts:", err);
+    res.status(500).json({ error: "Failed to retrieve loan counts" });
+  }
+});
+
 export default router;
