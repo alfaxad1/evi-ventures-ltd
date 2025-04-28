@@ -14,6 +14,7 @@ import { useModal } from "../../hooks/useModal";
 import { Modal } from "../../components/ui/modal";
 import Button from "../../components/ui/button/Button";
 import { toast, ToastContainer } from "react-toastify";
+import { Search } from "lucide-react";
 //import { useNavigate } from "react-router";
 
 interface Loan {
@@ -39,14 +40,18 @@ const Loans = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
 
   useEffect(() => {
-    fetchLoans(role, officerId);
-  }, [role, officerId]);
+    fetchLoans(role, officerId, page);
+  }, [role, officerId, page]);
 
   const [loansData, setLoansData] = useState<Loan[]>([]);
-  const fetchLoans = async (role: string, officerId: string): Promise<void> => {
+  const fetchLoans = async (
+    role: string,
+    officerId: string,
+    page: number
+  ): Promise<void> => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/loans/loan-details?role=${role}&officerId=${officerId}`
+        `http://localhost:8000/api/loans/loan-details?role=${role}&officerId=${officerId}&page=${page}`
       );
       console.log("Data fetched successfully:", response.data);
       setLoansData(response.data.data);
@@ -75,6 +80,7 @@ const Loans = () => {
   const [mpesaCode, setMpesaCode] = useState<string>("");
   const [paidDate, setPaidDate] = useState<string>("");
   const [status, setStatus] = useState<string>("");
+  const [searchString, setSearchString] = useState<string>("");
 
   useEffect(() => {
     setPaidDate(new Date().toISOString().split("T")[0]);
@@ -109,15 +115,36 @@ const Loans = () => {
       );
       console.log("Data posted successfully:", response.data);
       toast.success("Repayment saved successfully!");
-      fetchLoans(role, officerId);
+      fetchLoans(role, officerId, page);
     } catch (error) {
       console.error("Error posting data:", error);
     }
     closeModal();
   };
+
+  const filteredLoans = loansData.filter((loan) => {
+    return loan.customer_name
+      .toLowerCase()
+      .includes(searchString.toLowerCase());
+  });
+
   return (
     <>
       <ToastContainer />
+
+      <div className="relative mb-4">
+        <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+          <Search />
+        </span>
+        <input
+          type="text"
+          value={searchString}
+          onChange={(e) => setSearchString(e.target.value)}
+          placeholder="Search ..."
+          className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900  dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
+        />
+      </div>
+
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
         <div className="max-w-screen-lg mx-auto">
           <div className="w-full overflow-x-auto">
@@ -127,57 +154,57 @@ const Loans = () => {
                 <TableRow>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Customer Name
                   </TableCell>
 
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Loan Product
                   </TableCell>
 
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Principal
                   </TableCell>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Loan Amount
                   </TableCell>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Balance
                   </TableCell>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Status
                   </TableCell>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Due Date
                   </TableCell>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Days Remaining
                   </TableCell>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Actions
                   </TableCell>
@@ -186,26 +213,26 @@ const Loans = () => {
 
               {/* Table Body */}
               <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                {loansData.map((loan) => (
+                {filteredLoans.map((loan) => (
                   <TableRow key={loan.id}>
                     <TableCell className="px-5 py-4 sm:px-6 text-start">
                       {loan.customer_name}
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-blue-500 text-start text-theme-sm dark:text-gray-400">
+                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       {loan.loan_product}
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-blue-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.principal}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-blue-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.total_amount}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-blue-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.remaining_balance}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-blue-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       <span
                         style={{
                           color: loan.status === "active" ? "green" : "blue",
@@ -216,14 +243,14 @@ const Loans = () => {
                           : loan.status}
                       </span>
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-blue-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.due_date ? loan.due_date.split("T")[0] : "N/A"}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-blue-500 text-center text-theme-sm dark:text-gray-400">
+                    <TableCell className="px-4 py-3 text-gray-500 text-center text-theme-sm dark:text-gray-400">
                       {loan.days_remaining}
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-blue-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       <button
                         onClick={() => handleRepay(loan.id, loan.due_date)}
                         className="text-success-500 hover:text-success-700 ml-4"

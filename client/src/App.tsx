@@ -28,7 +28,6 @@ import { AddLoanProduct } from "./pages/DataPages/AddLoanProduct";
 import CustomerNew from "./pages/DataPages/CustomerNew";
 import { PaidLoans } from "./pages/DataPages/PaidLoans";
 import { PendingDisbursement } from "./pages/DataPages/PendingDisbursement";
-import { Overdue } from "./pages/DataPages/Overdue";
 import { Defaulted } from "./pages/DataPages/Defaulted";
 import { Due2To7 } from "./pages/DataPages/Due2To7";
 import { DueToday } from "./pages/DataPages/DueToday";
@@ -86,7 +85,7 @@ export default function App() {
               path="/pending-disbursement"
               element={<PendingDisbursement />}
             />
-            <Route path="/overdue" element={<Overdue />} />
+
             <Route path="/defaulted" element={<Defaulted />} />
             <Route path="/due-2-7" element={<Due2To7 />} />
             <Route path="/due-today" element={<DueToday />} />

@@ -183,7 +183,8 @@ router.get("/loan-details", async (req, res) => {
 //with status paid
 router.get("/loan-details/paid", async (req, res) => {
   try {
-    const { officerId, role } = req.query;
+    const { page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
 
     let baseQuery = `
       SELECT 
@@ -209,29 +210,31 @@ router.get("/loan-details/paid", async (req, res) => {
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_applications la ON l.application_id = la.id
       JOIN loan_products lp ON la.product_id = lp.id
+      WHERE l.status = 'paid'
     `;
 
-    const whereClauses = [];
-    const queryParams = [];
+    // Get total count
+    const [countResult] = await connection.query(
+      `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`
+    );
+    const total = countResult[0].total;
 
-    // Filter by officer_id if the user is an officer
-    if (role === "officer") {
-      whereClauses.push("l.officer_id = ?");
-      queryParams.push(officerId);
-    }
+    // Add pagination
+    const finalQuery = `${baseQuery} ORDER BY l.disbursement_date DESC LIMIT ? OFFSET ?`;
+    const [loans] = await connection.query(finalQuery, [
+      parseInt(limit),
+      offset,
+    ]);
 
-    // Add status filter for paid loans
-    whereClauses.push("l.status = 'paid'");
-
-    if (whereClauses.length > 0) {
-      baseQuery += ` WHERE ${whereClauses.join(" AND ")}`;
-    }
-
-    baseQuery += " ORDER BY l.disbursement_date DESC";
-
-    const [loans] = await connection.query(baseQuery, queryParams);
-
-    res.status(200).json(loans);
+    res.status(200).json({
+      data: loans,
+      meta: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (err) {
     console.error("Error fetching paid loan details:", err);
     res.status(500).json({ error: "Failed to retrieve paid loan details" });
@@ -821,7 +824,10 @@ router.get("/loan-details/due-2-7-days", async (req, res) => {
 //defaulted loans
 router.get("/loan-details/defaulted", async (req, res) => {
   try {
-    const [loans] = await connection.query(`
+    const { officerId, role, page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
+
+    let baseQuery = `
       SELECT 
         l.id,
         CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
@@ -838,10 +844,45 @@ router.get("/loan-details/defaulted", async (req, res) => {
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_products lp ON l.product_id = lp.id
       WHERE l.status = 'defaulted'
-      ORDER BY l.default_date ASC
-    `);
+    `;
 
-    res.status(200).json(loans);
+    const whereClauses = [];
+    const queryParams = [];
+
+    // Add officer-based filtering
+    if (role === "officer") {
+      whereClauses.push("l.officer_id = ?");
+      queryParams.push(officerId);
+    }
+
+    if (whereClauses.length > 0) {
+      baseQuery += ` AND ${whereClauses.join(" AND ")}`;
+    }
+
+    // Get total count
+    const [countResult] = await connection.query(
+      `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
+      queryParams
+    );
+    const total = countResult[0].total;
+
+    // Add pagination
+    const finalQuery = `${baseQuery} ORDER BY l.default_date ASC LIMIT ? OFFSET ?`;
+    const [loans] = await connection.query(finalQuery, [
+      ...queryParams,
+      parseInt(limit),
+      offset,
+    ]);
+
+    res.status(200).json({
+      data: loans,
+      meta: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (err) {
     console.error("Error fetching defaulted loans:", err);
     res.status(500).json({ error: "Failed to retrieve defaulted loans" });

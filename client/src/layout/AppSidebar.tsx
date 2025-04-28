@@ -57,7 +57,7 @@ const navItems: NavItem[] = [
       { name: "Due Today", path: "/due-today", pro: false },
       { name: "Due Tommorrow", path: "/due-tommorrow", pro: false },
       { name: "Due 2-7 days", path: "/due-2-7", pro: false },
-      { name: "Overdue", path: "/overdue", pro: false },
+     
       { name: "Defaulted", path: "/defaulted", pro: false },
     ],
   },

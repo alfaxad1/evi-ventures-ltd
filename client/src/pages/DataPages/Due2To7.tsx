@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "../../../src/components/ui/table";
 import withAuth from "../../utils/withAuth";
+import Button from "../../components/ui/button/Button";
 
 interface DueLoan {
   id: number;
@@ -23,30 +24,21 @@ interface DueLoan {
   days_remaining: number;
 }
 
-interface Meta {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-}
-
 const Due2To7 = () => {
   const [dueLoans, setDueLoans] = useState<DueLoan[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [meta, setMeta] = useState<Meta | null>(null);
   const [error, setError] = useState<string | null>(null);
-
   const [page, setPage] = useState<number>(1);
-  const limit = 10;
+  const [totalPages, setTotalPages] = useState<number>(1);
+
+  const role = JSON.parse(localStorage.getItem("role") || "''");
+  const officerId = localStorage.getItem("userId") || "";
 
   const fetchDueLoans = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const role = JSON.parse(localStorage.getItem("role") || "''");
-      const officerId = localStorage.getItem("userId") || "";
-
       const response = await axios.get(
         "http://localhost:8000/api/loans/loan-details/due-2-7-days",
         {
@@ -54,12 +46,11 @@ const Due2To7 = () => {
             role,
             officerId,
             page,
-            limit,
           },
         }
       );
       setDueLoans(response.data.data);
-      setMeta(response.data.meta);
+      setTotalPages(response.data.meta.totalPages);
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         setError(error.response?.data?.error || "Failed to fetch loans.");
@@ -69,14 +60,20 @@ const Due2To7 = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, limit]);
+  }, [role, officerId, page]);
 
   useEffect(() => {
     fetchDueLoans();
   }, [fetchDueLoans]);
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && meta && newPage <= meta.totalPages) {
-      setPage(newPage);
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      setPage(page + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
     }
   };
 
@@ -196,27 +193,29 @@ const Due2To7 = () => {
               </TableBody>
             </Table>
           )}
-          {meta && dueLoans.length > 0 && (
-            <div className="flex items-center justify-end gap-2 py-4 px-5">
-              <button
-                className="text-blue-400"
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page === 1}
-              >
-                Previous
-              </button>
-              <span>
-                Page {meta.page} of {meta.totalPages}
-              </span>
-              <button
-                className="text-blue-400"
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page === meta.totalPages}
-              >
-                Next
-              </button>
-            </div>
-          )}
+          <div className="flex justify-between items-center mt-4">
+            <Button
+              size="sm"
+              className="hover:bg-gray-200 m-4"
+              variant="outline"
+              onClick={handlePrevPage}
+              disabled={page === 1}
+            >
+              Previous
+            </Button>
+            <span>
+              Page {page} of {totalPages}
+            </span>
+            <Button
+              size="sm"
+              className="hover:bg-gray-200 m-4"
+              variant="outline"
+              onClick={handleNextPage}
+              disabled={page === totalPages}
+            >
+              Next
+            </Button>
+          </div>
         </div>
       </div>
     </div>
