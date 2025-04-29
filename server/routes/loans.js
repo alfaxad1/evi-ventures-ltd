@@ -183,7 +183,7 @@ router.get("/loan-details", async (req, res) => {
 //with status paid
 router.get("/loan-details/paid", async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    const { officerId, role, page = 1, limit = 10 } = req.query; // Get officerId, role, page, and limit from query parameters
     const offset = (page - 1) * limit;
 
     let baseQuery = `
@@ -210,18 +210,35 @@ router.get("/loan-details/paid", async (req, res) => {
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_applications la ON l.application_id = la.id
       JOIN loan_products lp ON la.product_id = lp.id
-      WHERE l.status = 'paid'
     `;
+
+    const whereClauses = [];
+    const queryParams = [];
+
+    // Filter by officer_id if the user is an officer
+    if (role === "officer") {
+      whereClauses.push("l.officer_id = ?");
+      queryParams.push(officerId);
+    }
+
+    // Add status filter for paid loans
+    whereClauses.push("l.status = 'paid'");
+
+    if (whereClauses.length > 0) {
+      baseQuery += ` WHERE ${whereClauses.join(" AND ")}`;
+    }
 
     // Get total count
     const [countResult] = await connection.query(
-      `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`
+      `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
+      queryParams
     );
     const total = countResult[0].total;
 
-    // Add pagination
+    // Add pagination and sorting
     const finalQuery = `${baseQuery} ORDER BY l.disbursement_date DESC LIMIT ? OFFSET ?`;
     const [loans] = await connection.query(finalQuery, [
+      ...queryParams,
       parseInt(limit),
       offset,
     ]);

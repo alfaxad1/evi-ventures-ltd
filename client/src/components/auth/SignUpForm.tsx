@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Select from "../form/Select";
 import Button from "../ui/button/Button";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import { useNavigate } from "react-router";
 
 interface userData {
   firstName: string;
@@ -25,7 +26,9 @@ export default function SignUpForm() {
     role: "",
     password: "",
   });
-  const [avatar, setAvatar] = useState<File | null>(null); // State for avatar file
+  const [avatar, setAvatar] = useState<File | null>(null);
+
+  const navigate = useNavigate();
 
   const handleSelectChange = (value: string) => {
     setFormData({
@@ -47,7 +50,6 @@ export default function SignUpForm() {
     }
   };
 
-  const navigate = useNavigate();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -58,7 +60,23 @@ export default function SignUpForm() {
       formDataToSend.append("role", formData.role);
       formDataToSend.append("password", formData.password);
       if (avatar) {
-        formDataToSend.append("avatar", avatar); // Append avatar file
+        formDataToSend.append("avatar", avatar);
+      }
+
+      const resetForm = () => {
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          role: "",
+          password: "",
+        });
+      };
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("You are not authorized ");
+        return;
       }
 
       const response = await axios.post(
@@ -67,124 +85,144 @@ export default function SignUpForm() {
         {
           headers: {
             "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
-      navigate("/signin");
+      resetForm();
       console.log("Form submitted successfully:", response);
-    } catch (error) {
-      console.error("Error submitting form:", error);
+      toast.success("User created successfully");
+      navigate("/all-users");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
+          toast.error("You are not authorized");
+        } else {
+          toast.error("An unexpected error occurred. Please try again.");
+        }
+        console.error("Error approving loan:", error);
+      } else {
+        console.error("Unexpected error:", error);
+        toast.error("An unexpected error occurred. Please try again.");
+      }
     }
   };
 
   return (
-    <div className="flex flex-col flex-1 w-full overflow-y-auto lg:w-1/2 no-scrollbar">
-      <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
-        <div>
-          <div className="mb-5 sm:mb-8"></div>
+    <>
+      <ToastContainer position="bottom-right" />
+      <div className="flex flex-col flex-1 w-full overflow-y-auto lg:w-1/2 no-scrollbar">
+        <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
           <div>
-            <form onSubmit={(e) => handleSubmit(e)}>
-              <div className="space-y-5">
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  {/* First Name */}
-                  <div className="sm:col-span-1">
+            <div className="mb-5 sm:mb-8"></div>
+            <div>
+              <form onSubmit={(e) => handleSubmit(e)}>
+                <div className="space-y-5">
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    {/* First Name */}
+                    <div className="sm:col-span-1">
+                      <Label>
+                        First Name<span className="text-error-500">*</span>
+                      </Label>
+                      <Input
+                        type="text"
+                        id="fname"
+                        name="firstName"
+                        onChange={(e) => handleChange(e)}
+                        placeholder="Enter your first name"
+                      />
+                    </div>
+                    {/* Last Name */}
+                    <div className="sm:col-span-1">
+                      <Label>
+                        Last Name<span className="text-error-500">*</span>
+                      </Label>
+                      <Input
+                        type="text"
+                        id="lastName"
+                        name="lastName"
+                        onChange={(e) => handleChange(e)}
+                        placeholder="Enter your last name"
+                      />
+                    </div>
+                  </div>
+                  {/* Email */}
+                  <div>
                     <Label>
-                      First Name<span className="text-error-500">*</span>
+                      Email<span className="text-error-500">*</span>
                     </Label>
                     <Input
-                      type="text"
-                      id="fname"
-                      name="firstName"
+                      type="email"
+                      id="email"
                       onChange={(e) => handleChange(e)}
-                      placeholder="Enter your first name"
+                      name="email"
+                      placeholder="Enter your email"
                     />
                   </div>
-                  {/* Last Name */}
-                  <div className="sm:col-span-1">
+                  {/* Role */}
+                  <div>
                     <Label>
-                      Last Name<span className="text-error-500">*</span>
+                      Role<span className="text-error-500">*</span>
                     </Label>
-                    <Input
-                      type="text"
-                      id="lastName"
-                      name="lastName"
-                      onChange={(e) => handleChange(e)}
-                      placeholder="Enter your last name"
+                    <Select
+                      options={[
+                        { value: "admin", label: "Admin" },
+                        { value: "officer", label: "Officer" },
+                      ]}
+                      onChange={handleSelectChange}
+                      placeholder="Select your role"
                     />
                   </div>
-                </div>
-                {/* Email */}
-                <div>
-                  <Label>
-                    Email<span className="text-error-500">*</span>
-                  </Label>
-                  <Input
-                    type="email"
-                    id="email"
-                    onChange={(e) => handleChange(e)}
-                    name="email"
-                    placeholder="Enter your email"
-                  />
-                </div>
-                {/* Role */}
-                <div>
-                  <Label>
-                    Role<span className="text-error-500">*</span>
-                  </Label>
-                  <Select
-                    options={[
-                      { value: "admin", label: "Admin" },
-                      { value: "officer", label: "Officer" },
-                    ]}
-                    onChange={handleSelectChange}
-                    placeholder="Select your role"
-                  />
-                </div>
-                {/* Password */}
-                <div>
-                  <Label>
-                    Password<span className="text-error-500">*</span>
-                  </Label>
-                  <div className="relative">
+                  {/* Password */}
+                  <div>
+                    <Label>
+                      Password<span className="text-error-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        name="password"
+                        placeholder="Enter your password"
+                        onChange={(e) => handleChange(e)}
+                        type={showPassword ? "text" : "password"}
+                      />
+                      <span
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
+                      >
+                        {showPassword ? (
+                          <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                        ) : (
+                          <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                  {/* Avatar */}
+                  <div>
+                    <Label>Avatar</Label>
                     <Input
-                      name="password"
-                      placeholder="Enter your password"
-                      onChange={(e) => handleChange(e)}
-                      type={showPassword ? "text" : "password"}
+                      type="file"
+                      name="avatar"
+                      accept="image/*"
+                      onChange={(e) => handleFileChange(e)}
                     />
-                    <span
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
-                    >
-                      {showPassword ? (
-                        <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
-                      ) : (
-                        <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
-                      )}
-                    </span>
+                  </div>
+                  {/* Submit Button */}
+                  <div>
+                    <Button className="w-full" size="sm" type="submit">
+                      Submit
+                    </Button>
                   </div>
                 </div>
-                {/* Avatar */}
-                <div>
-                  <Label>Avatar</Label>
-                  <Input
-                    type="file"
-                    name="avatar"
-                    accept="image/*"
-                    onChange={(e) => handleFileChange(e)}
-                  />
-                </div>
-                {/* Submit Button */}
-                <div>
-                  <Button className="w-full" size="sm" type="submit">
-                    Sign up
-                  </Button>
-                </div>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

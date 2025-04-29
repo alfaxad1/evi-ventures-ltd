@@ -5,6 +5,7 @@ import connection from "../config/dbConnection.js";
 import dotenv from "dotenv";
 import multer from "multer";
 import path from "path";
+import { authorizeRoles } from "../middleware/roleMiddleware.js";
 dotenv.config();
 
 const router = express.Router();
@@ -113,37 +114,43 @@ router.delete("/:id", async (req, res) => {
 });
 
 //register a user
-router.post("/register", upload.single("avatar"), async (req, res) => {
-  try {
-    const hash = await bcrypt.hash(req.body.password, salt);
-    const avatarPath = req.file
-      ? `/uploads/avatars/${req.file.filename}`
-      : null;
+router.post(
+  "/register",
+  authorizeRoles(["admin"]),
+  upload.single("avatar"),
+  async (req, res) => {
+    try {
+      const url = "http://localhost:8000";
+      const hash = await bcrypt.hash(req.body.password, salt);
+      const avatarPath = req.file
+        ? `${url}/uploads/avatars/${req.file.filename}`
+        : null;
 
-    const values = [
-      req.body.firstName,
-      req.body.lastName,
-      req.body.email,
-      hash,
-      req.body.role.toLowerCase(),
-      1, // is_active is set to 1 by default
-      avatarPath,
-    ];
+      const values = [
+        req.body.firstName,
+        req.body.lastName,
+        req.body.email,
+        hash,
+        req.body.role.toLowerCase(),
+        1, // is_active is set to 1 by default
+        avatarPath,
+      ];
 
-    const sql =
-      "INSERT INTO users (first_name, last_name, email, password, role, is_active, avatar) VALUES (?)";
-    const [result] = await connection.query(sql, [values]);
+      const sql =
+        "INSERT INTO users (first_name, last_name, email, password, role, is_active, avatar) VALUES (?)";
+      const [result] = await connection.query(sql, [values]);
 
-    res.status(200).json({
-      message: "User registered successfully",
-      Status: "Success",
-      avatar: avatarPath,
-    });
-  } catch (err) {
-    console.error("Error registering user:", err);
-    res.status(500).json({ error: "Error registering user" });
+      res.status(200).json({
+        message: "User registered successfully",
+        Status: "Success",
+        avatar: avatarPath,
+      });
+    } catch (err) {
+      console.error("Error registering user:", err);
+      res.status(500).json({ error: "Error registering user" });
+    }
   }
-});
+);
 
 //login a user
 router.post("/login", async (req, res) => {
