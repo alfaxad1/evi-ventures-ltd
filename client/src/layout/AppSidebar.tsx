@@ -105,7 +105,7 @@ const othersItems: NavItem[] = [
           { name: "Add User", path: "/signup", pro: false },
           {
             name: "All Users",
-            path: "/monthly-approved-repayments",
+            path: "/all-users",
             pro: false,
           },
         ]

@@ -39,10 +39,30 @@ const upload = multer({
 });
 
 //get all users
-router.get("/", async (req, res) => {
+router.get("/", authorizeRoles(["admin"]), async (req, res) => {
   try {
-    const [result] = await connection.query("SELECT * FROM users");
-    res.status(200).json(result);
+    const { page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
+
+    const [countResult] = await connection.query(
+      "SELECT COUNT(*) as total FROM users"
+    );
+    const total = countResult[0].total;
+
+    const [result] = await connection.query(
+      "SELECT * FROM users LIMIT ? OFFSET ?",
+      [parseInt(limit), offset]
+    );
+
+    res.status(200).json({
+      data: result,
+      meta: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (err) {
     console.error("Error getting users:", err);
     res.status(500).json({ error: "Error getting users" });
@@ -52,7 +72,6 @@ router.get("/", async (req, res) => {
 //get all officers
 router.get("/officers", async (req, res) => {
   try {
-    213;
     const [officers] = await connection.query(
       "SELECT * FROM users WHERE role = 'officer'"
     );

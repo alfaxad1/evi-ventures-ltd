@@ -32,6 +32,7 @@ import { DueToday } from "./pages/DataPages/DueToday";
 import { DueTommorrow } from "./pages/DataPages/DueTommorrow";
 import { MonthlyActiveLoans } from "./pages/DataPages/MonthlyActiveLoans";
 import AuthenticatedMonthlyApprovedRepayments from "./pages/DataPages/MonthlyApprovedRepayments";
+import { AllUsers } from "./pages/DataPages/AllUsers";
 
 export default function App() {
   return (
@@ -65,7 +66,7 @@ export default function App() {
             {/* Data pages */}
             <Route path="/customers" element={<Customers />} />
             <Route path="/loans" element={<Loans />} />
-
+            <Route path="/all-users" element={<AllUsers />} />
             <Route path="/pending-loans" element={<PendingLoans />} />
             <Route path="/rejected-loans" element={<RejectedLoans />} />
             <Route path="/loan-application" element={<LoanApplication />} />
