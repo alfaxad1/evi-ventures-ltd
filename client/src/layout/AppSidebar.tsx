@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
-
-// Assume these icons are imported from an icon library
 import { ChevronDownIcon, HorizontaLDots } from "../icons";
 import {
   Banknote,
@@ -57,11 +55,20 @@ const navItems: NavItem[] = [
       { name: "Due Today", path: "/due-today", pro: false },
       { name: "Due Tommorrow", path: "/due-tommorrow", pro: false },
       { name: "Due 2-7 days", path: "/due-2-7", pro: false },
-     
       { name: "Defaulted", path: "/defaulted", pro: false },
     ],
   },
 ];
+
+const role: string | null = JSON.parse(localStorage.getItem("role") || "null");
+
+//const role = "admin";
+console.log("role: ", role);
+
+let show = true;
+if (role !== "admin") {
+  show = false;
+}
 
 const othersItems: NavItem[] = [
   {
@@ -88,6 +95,21 @@ const othersItems: NavItem[] = [
       { name: "Disbursements", path: "/monthly-active-loans", pro: false },
       { name: "Collections", path: "/monthly-approved-repayments", pro: false },
     ],
+  },
+
+  {
+    icon: <Users />,
+    name: "Users",
+    subItems: show
+      ? [
+          { name: "Add User", path: "/signup", pro: false },
+          {
+            name: "All Users",
+            path: "/monthly-approved-repayments",
+            pro: false,
+          },
+        ]
+      : [],
   },
 ];
 

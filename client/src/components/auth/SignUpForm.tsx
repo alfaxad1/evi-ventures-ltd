@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
@@ -13,7 +13,7 @@ interface userData {
   email: string;
   role: string;
   password: string;
-  avatar?: File; // Add avatar field
+  avatar?: File;
 }
 
 export default function SignUpForm() {
@@ -81,14 +81,7 @@ export default function SignUpForm() {
     <div className="flex flex-col flex-1 w-full overflow-y-auto lg:w-1/2 no-scrollbar">
       <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
         <div>
-          <div className="mb-5 sm:mb-8">
-            <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
-              Sign Up
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Enter your details to sign up!
-            </p>
-          </div>
+          <div className="mb-5 sm:mb-8"></div>
           <div>
             <form onSubmit={(e) => handleSubmit(e)}>
               <div className="space-y-5">
@@ -189,18 +182,6 @@ export default function SignUpForm() {
                 </div>
               </div>
             </form>
-
-            <div className="mt-5">
-              <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                Already have an account?{" "}
-                <Link
-                  to="/signin"
-                  className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
-                >
-                  Sign In
-                </Link>
-              </p>
-            </div>
           </div>
         </div>
       </div>

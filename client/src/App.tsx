@@ -9,9 +9,7 @@ import Alerts from "./pages/UiElements/Alerts";
 import Badges from "./pages/UiElements/Badges";
 import Avatars from "./pages/UiElements/Avatars";
 import Buttons from "./pages/UiElements/Buttons";
-
 import BasicTables from "./pages/Tables/BasicTables";
-
 import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
@@ -41,16 +39,18 @@ export default function App() {
       <Router>
         <ScrollToTop />
         <Routes>
+          {/* Auth Layout */}
+          <Route path="/signin" element={<SignIn />} />
+
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
+            <Route path="/signup" element={<SignUp />} />
             <Route index path="/" element={<Home />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
 
             <Route path="/blank" element={<Blank />} />
-
-            {/* Forms */}
 
             {/* Tables */}
             <Route path="/basic-tables" element={<BasicTables />} />
@@ -99,10 +99,6 @@ export default function App() {
               element={<AuthenticatedMonthlyApprovedRepayments />}
             />
           </Route>
-
-          {/* Auth Layout */}
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
 
           {/* Not Found */}
 

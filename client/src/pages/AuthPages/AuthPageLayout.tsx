@@ -27,12 +27,7 @@ export default function AuthLayout({
               </Link>
               <p className="text-center text-gray-400 dark:text-white/60">
                 This is Evi Ventures Limited, a loan company that provides
-                financial services to individuals and businesses. We offer
-                personal loans, business loans, and other financial products to
-                help our clients achieve their financial goals. Our mission is
-                to provide fast, reliable, and affordable financial solutions to
-                our clients. We are committed to transparency, integrity, and
-                customer satisfaction.
+                financial services to individuals and businesses.
               </p>
             </div>
           </div>

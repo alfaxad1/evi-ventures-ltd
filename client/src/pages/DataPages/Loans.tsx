@@ -15,6 +15,7 @@ import { Modal } from "../../components/ui/modal";
 import Button from "../../components/ui/button/Button";
 import { toast, ToastContainer } from "react-toastify";
 import { Search } from "lucide-react";
+import Badge from "../../components/ui/badge/Badge";
 //import { useNavigate } from "react-router";
 
 interface Loan {
@@ -233,15 +234,13 @@ const Loans = () => {
                       {loan.remaining_balance}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      <span
-                        style={{
-                          color: loan.status === "active" ? "green" : "blue",
-                        }}
+                      <Badge
+                        color={loan.status === "active" ? "success" : "warning"}
                       >
                         {loan.status === "partially_paid"
                           ? "partially paid"
                           : loan.status}
-                      </span>
+                      </Badge>
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.due_date ? loan.due_date.split("T")[0] : "N/A"}
