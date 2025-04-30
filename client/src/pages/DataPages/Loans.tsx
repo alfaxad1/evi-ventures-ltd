@@ -30,6 +30,8 @@ interface Loan {
   status: string;
   due_date: string;
   days_remaining: number;
+  total_interest: number;
+  installment_amount: number;
 }
 const Loans = () => {
   const { isOpen, openModal, closeModal } = useModal();
@@ -159,12 +161,11 @@ const Loans = () => {
                   >
                     Customer Name
                   </TableCell>
-
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
-                    Loan Product
+                    Installment
                   </TableCell>
 
                   <TableCell
@@ -172,6 +173,12 @@ const Loans = () => {
                     className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Principal
+                  </TableCell>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Interest
                   </TableCell>
                   <TableCell
                     isHeader
@@ -185,6 +192,7 @@ const Loans = () => {
                   >
                     Balance
                   </TableCell>
+
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
@@ -221,11 +229,14 @@ const Loans = () => {
                     </TableCell>
 
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {loan.loan_product}
+                      {loan.installment_amount}
                     </TableCell>
 
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.principal}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      {loan.total_interest}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.total_amount}

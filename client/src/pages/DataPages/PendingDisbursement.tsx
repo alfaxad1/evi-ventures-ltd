@@ -130,12 +130,7 @@ const PendingDisbursement = () => {
                   >
                     Customer Name
                   </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    National ID
-                  </TableCell>
+
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
@@ -195,9 +190,6 @@ const PendingDisbursement = () => {
                       {loan.customer_name}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {loan.national_id}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       {loan.phone}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
@@ -213,7 +205,7 @@ const PendingDisbursement = () => {
                       {loan.total_amount}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.due_date}
+                      {loan.due_date.split("T")[0]}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.days_remaining}

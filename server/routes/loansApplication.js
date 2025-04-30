@@ -391,12 +391,11 @@ router.post("/", validateLoanApplication, async (req, res) => {
     const {
       customerId,
       productId,
-      officerId = 3,
+      officerId,
       amount,
       purpose,
       status = "pending",
-
-      installmentType, // Add installment type
+      installmentType,
     } = req.body;
 
     // Verify customer exists
@@ -407,6 +406,16 @@ router.post("/", validateLoanApplication, async (req, res) => {
     if (customer.length === 0) {
       return res.status(404).json({ error: "Customer not found" });
     }
+
+    // Verify loan officer exists
+    const [officer] = await connection.query(
+      "SELECT id FROM users WHERE id = ? AND role = 'officer'",
+      [officerId]
+    );
+    if (officer.length === 0) {
+      return res.status(404).json({ error: "Loan officer not found" });
+    }
+    console.log("Loan officer:", officerId);
 
     // Verify product exists
     const [product] = await connection.query(

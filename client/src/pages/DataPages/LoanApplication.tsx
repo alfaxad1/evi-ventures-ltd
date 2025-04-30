@@ -12,21 +12,19 @@ interface LoanApplicationData {
   productId: number;
   amount: number;
   purpose: string;
-
   customerId: number;
   installmentType: string;
-  //officerId: number;
+  officerId: number;
 }
 
 const LoanApplication = () => {
   const [formData, setFormData] = useState<LoanApplicationData>({
     amount: 0,
     purpose: "",
-
     productId: 0,
     customerId: 0,
     installmentType: "",
-    //officerId: 0,
+    officerId: 0,
   });
   const [options, setOptions] = useState<{ value: string; label: string }[]>(
     []
@@ -75,13 +73,15 @@ const LoanApplication = () => {
   };
 
   const customerId = localStorage.getItem("customerId");
-  const userId = localStorage.getItem("userId");
+  const userId = parseInt(localStorage.getItem("userId") || "0");
+
+  console.log("User ID:", userId);
 
   useEffect(() => {
     setFormData((prevFormData) => ({
       ...prevFormData,
       customerId: customerId ? parseInt(customerId) : 0,
-      //officerId: userId ? parseInt(userId) : 0,
+      officerId: userId,
     }));
   }, [customerId, userId]);
 
@@ -94,7 +94,7 @@ const LoanApplication = () => {
       productId: 0,
       customerId: 0,
       installmentType: "",
-      //officerId: 0,
+      officerId: 0,
     });
   };
 
