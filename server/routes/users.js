@@ -88,6 +88,7 @@ router.get("/officers", async (req, res) => {
 });
 
 //get a user
+
 router.get("/:id", async (req, res) => {
   try {
     const [result] = await connection.query(

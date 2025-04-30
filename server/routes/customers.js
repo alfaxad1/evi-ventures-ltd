@@ -38,17 +38,22 @@ const validateCustomerData = [
 // Get all customers with pagination
 router.get("/", async (req, res) => {
   try {
-    const { role, userId } = req.query; // Get role and userId from query parameters
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const { role, userId, page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
 
-    let query = "SELECT * FROM customers WHERE is_active = TRUE";
+    let query = `
+      SELECT 
+        c.*,
+        u.first_name AS created_by_name
+      FROM customers c
+      LEFT JOIN users u ON c.created_by = u.id
+      WHERE c.is_active = TRUE
+    `;
     let queryParams = [];
 
     // If the user is an officer, filter customers by created_by field
     if (role === "officer") {
-      query += " AND created_by = ?";
+      query += " AND c.created_by = ?";
       queryParams.push(userId);
     }
 
@@ -60,7 +65,7 @@ router.get("/", async (req, res) => {
     const total = countResult[0].total;
 
     // Get paginated customers
-    query += " LIMIT ? OFFSET ?";
+    query += " ORDER BY c.id LIMIT ? OFFSET ?";
     queryParams.push(limit, offset);
 
     const [customers] = await connection.query(query, queryParams);

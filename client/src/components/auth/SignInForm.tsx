@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
@@ -107,14 +107,14 @@ export default function SignInForm() {
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between">
+                  {/* <div className="flex items-center justify-between">
                     <Link
                       to="/reset-password"
                       className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
                     >
                       Forgot password?
                     </Link>
-                  </div>
+                  </div> */}
                   <div>
                     <Button className="w-full" size="sm" type="submit">
                       Sign in
@@ -122,18 +122,6 @@ export default function SignInForm() {
                   </div>
                 </div>
               </form>
-
-              <div className="mt-5">
-                <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                  Don&apos;t have an account? {""}
-                  <Link
-                    to="/signup"
-                    className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
-                  >
-                    Sign Up
-                  </Link>
-                </p>
-              </div>
             </div>
           </div>
         </div>
