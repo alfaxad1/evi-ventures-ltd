@@ -74,9 +74,15 @@ export const updateLoanStatus = async (loanId, connection) => {
     let newStatus = loan[0].status;
     let newArrears = arrears;
 
+    console.log("Total amount: ", total_amount);
+    console.log("Installments sum: ", installmentsSum);
+    console.log("Remaining balance: ", remainingBalance);
+    console.log("Arrears: ", arrears);
+
     if (installmentsSum >= total_amount) {
       newStatus = "paid";
       newArrears = 0; // Clear arrears when fully paid
+      console.log("Setting to paid");
     } else if (new Date(due_date) < new Date() && arrears > 0) {
       newStatus = "defaulted"; // Mark as defaulted if arrears exist on due date
     } else if (installmentsSum > 0) {

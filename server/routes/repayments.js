@@ -83,8 +83,7 @@ router.get("/pending", async (req, res) => {
 //approved repayments
 router.get("/approved", async (req, res) => {
   try {
-    const { officerId, role } = req.query; // Get officerId and role from query parameters
-
+    const { officerId, role } = req.query; 
     let sql = `
       SELECT r.*, l.total_amount, l.status as loan_status,
              c.id as customer_id,  
@@ -418,7 +417,7 @@ router.post("/check-missed-payments", async (req, res) => {
   }
 });
 
-// Now properly using calculateRemainingBalance in GET endpoints
+// calculateRemainingBalance in GET endpoints
 router.get("/:id/balance", async (req, res) => {
   try {
     const balance = await calculateRemainingBalance(req.params.id, connection);
